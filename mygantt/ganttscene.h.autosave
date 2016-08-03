@@ -1,0 +1,12 @@
+#ifndef GANTTSCENE_H
+#define GANTTSCENE_H
+
+#include <QGraphicsScene>
+
+class GanttScene : public QGraphicsScene
+{
+public:
+    GanttScene();
+};
+
+#endif // GANTTSCENE_H

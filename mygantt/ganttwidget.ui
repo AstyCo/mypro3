@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GanttWidget</class>
+ <widget class="QWidget" name="GanttWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>GanttWidget</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0" colspan="2">
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <widget class="GanttTreeView" name="treeView"/>
+     <widget class="GanttGraphicsView" name="ganttView"/>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="1" column="1">
+    <widget class="QComboBox" name="comboBox_mode">
+     <item>
+      <property name="text">
+       <string>Months</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Days</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Hours</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Minutes</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Seconds</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>GanttGraphicsView</class>
+   <extends>QGraphicsView</extends>
+   <header>mygantt_graphicsview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>GanttTreeView</class>
+   <extends>QTreeView</extends>
+   <header>mygantt_treeview.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,17 @@
+#ifndef GANTTINFO_H
+#define GANTTINFO_H
+
+#include "mygantt_infoitem.h"
+
+#include <QList>
+
+class GanttInfo
+{
+public:
+    GanttInfo();
+    
+private:
+    QList<GanttInfoItem> m_items;
+};
+
+#endif // GANTTINFO_H

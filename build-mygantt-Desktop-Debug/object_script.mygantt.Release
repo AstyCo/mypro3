@@ -1,0 +1,16 @@
+INPUT(
+./release\main.o
+./release\mygantt_header.o
+./release\mygantt_scene.o
+./release\mygantt_widget.o
+./release\qgraphicsrectitemwithtext.o
+./release\mygantt_item.o
+./release\mygantt_treemodel.o
+./release\mygantt_infoleaf.o
+./release\mygantt_infonode.o
+./release\mygantt_infoitem.o
+./release\mygantt_treeview.o
+./release\mygantt_graphicsview.o
+./release\fromballisticextension.o
+./release\moc_mygantt_widget.o
+);

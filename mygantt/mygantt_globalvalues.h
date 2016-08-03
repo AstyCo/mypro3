@@ -1,0 +1,15 @@
+#ifndef MYGANTT_GLOBALVALUES
+#define MYGANTT_GLOBALVALUES
+
+#define DEFAULT_ITEM_WIDTH (qreal(20))
+#define DEFAULT_MONTH_WIDTH (qreal(35))
+
+#define HOURS_IN_DAY (24)
+#define MINUTS_IN_HOUR (60)
+#define SECONDS_IN_MINUTE (60)
+
+#define SECONDS_IN_HOUR (3600)
+
+
+#endif // MYGANTT_GLOBALVALUES
+
