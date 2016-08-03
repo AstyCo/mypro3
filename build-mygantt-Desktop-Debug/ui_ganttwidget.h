@@ -28,11 +28,11 @@ class Ui_GanttWidget
 {
 public:
     QGridLayout *gridLayout;
+    QSpacerItem *horizontalSpacer;
+    QComboBox *comboBox_mode;
     QSplitter *splitter;
     GanttTreeView *treeView;
     GanttGraphicsView *ganttView;
-    QSpacerItem *horizontalSpacer;
-    QComboBox *comboBox_mode;
 
     void setupUi(QWidget *GanttWidget)
     {
@@ -43,6 +43,15 @@ public:
         gridLayout->setSpacing(6);
         gridLayout->setContentsMargins(11, 11, 11, 11);
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        gridLayout->addItem(horizontalSpacer, 1, 0, 1, 1);
+
+        comboBox_mode = new QComboBox(GanttWidget);
+        comboBox_mode->setObjectName(QString::fromUtf8("comboBox_mode"));
+
+        gridLayout->addWidget(comboBox_mode, 1, 1, 1, 1);
+
         splitter = new QSplitter(GanttWidget);
         splitter->setObjectName(QString::fromUtf8("splitter"));
         splitter->setOrientation(Qt::Horizontal);
@@ -54,15 +63,6 @@ public:
         splitter->addWidget(ganttView);
 
         gridLayout->addWidget(splitter, 0, 0, 1, 2);
-
-        horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-
-        gridLayout->addItem(horizontalSpacer, 1, 0, 1, 1);
-
-        comboBox_mode = new QComboBox(GanttWidget);
-        comboBox_mode->setObjectName(QString::fromUtf8("comboBox_mode"));
-
-        gridLayout->addWidget(comboBox_mode, 1, 1, 1, 1);
 
 
         retranslateUi(GanttWidget);
