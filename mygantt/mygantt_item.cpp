@@ -1,6 +1,9 @@
 #include "mygantt_item.h"
 #include "mygantt_scene.h"
 
+#include "mygantt_infonode.h"
+
+#include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 
 GanttItem::GanttItem(GanttInfoLeaf *info,QGraphicsItem *parent) :
@@ -20,10 +23,10 @@ void GanttItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
+    QRectF drawRect = boundingRect().adjusted(0,5,0,-5);
 
-
-    painter->fillRect(boundingRect().adjusted(0,5,0,-5),QBrush(m_info->getColor()));
-    painter->drawRect(boundingRect().adjusted(0,5,0,-5));
+    painter->fillRect(drawRect,QBrush(m_info->getColor()));
+    painter->drawRect(drawRect);
 }
 
 void GanttItem::setScene(GanttScene *scene)
@@ -44,6 +47,17 @@ GanttInfoLeaf *GanttItem::info() const
 QRectF GanttItem::rect() const
 {
     return QRectF(pos(),m_boundingRectSize);
+}
+
+void GanttItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    Q_UNUSED(event);
+
+    if(!m_scene || !m_info)
+        return;
+
+    if(m_info->parent())
+        m_scene->changeExpanding(m_info->parent()->index());
 }
 
 

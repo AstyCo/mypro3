@@ -23,6 +23,9 @@ public:
 
     QRectF rect() const;
 
+protected:
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
+
 private:
 
     GanttInfoLeaf* m_info;

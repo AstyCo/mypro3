@@ -5,6 +5,7 @@
 #include "mygantt_infoleaf.h"
 
 #include <QList>
+#include <QModelIndex>
 
 class GanttHeader;
 class GanttScene;
@@ -27,7 +28,7 @@ public:
 
     qreal height() const;
 
-
+    QModelIndex find(const GanttInfoItem* item) const;
 
     bool isExpanded() const;
     void setIsExpanded(bool isExpanded);

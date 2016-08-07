@@ -50,7 +50,8 @@ SOURCES += main.cpp\
     mygantt_infoitem.cpp \
     mygantt_treeview.cpp \
     mygantt_graphicsview.cpp \
-    fromballisticextension.cpp
+    fromballisticextension.cpp \
+    mygantt_slider.cpp
 
 HEADERS  += \
     mygantt_globalvalues.h \
@@ -65,6 +66,7 @@ HEADERS  += \
     mygantt_infoitem.h \
     mygantt_graphicsview.h \
     mygantt_treeview.h \
-    fromballisticextension.h
+    fromballisticextension.h \
+    mygantt_slider.h
 
 FORMS    += ganttwidget.ui

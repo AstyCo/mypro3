@@ -9,7 +9,8 @@
 
 #include <QGraphicsView>
 
-
+#include <QScrollBar>
+#include <QSize>
 #include <QGraphicsSceneMouseEvent>
 #include <QPen>
 #include <QtCore/qmath.h>
@@ -20,14 +21,27 @@ GanttScene::GanttScene(QObject * parent) :
 {
     m_header = new GanttHeader;
     m_header->setScene(this);
+    m_slider = new GanttSlider;
+    m_slider->setScene(this);
+
+    updateSliderRect();
+
+//    QBrush backgroundBrush(Qt::HorPattern);
+//    backgroundBrush.setMatrix(QMatrix().scale(1,DEFAULT_ITEM_HEIGHT*1.0/15));
+
+//    setBackgroundBrush(backgroundBrush);
+
 
 }
 
-void GanttScene::updateWidth(qreal w)
+void GanttScene::updateWidth(int w)
 {
     setSceneRect(0,0,w,sceneRect().height());
 
     if(views().isEmpty())
+        return;
+
+    if(m_header->headerMode() == GanttHeader::TimelineMode)
         return;
 
     GanttGraphicsView* p_view = dynamic_cast<GanttGraphicsView*>(views()[0]);
@@ -36,9 +50,10 @@ void GanttScene::updateWidth(qreal w)
     {
         p_view->setMaximumWidth(w);
     }
+
 }
 
-void GanttScene::updateHeight(qreal h)
+void GanttScene::updateHeight(int h)
 {
     setSceneRect(0,0,sceneRect().width(),h);
 }
@@ -47,10 +62,9 @@ void GanttScene::drawBackground(QPainter *painter, const QRectF &rect)
 {
     QGraphicsScene::drawBackground(painter,rect);
 
-    qreal startX = (qCeil(rect.x() / m_header->secondHeaderWidth()))*m_header->secondHeaderWidth();
 
-    qreal   bgTop = rect.top()
-            ,bgBottom = rect.bottom()
+    qreal   /*bgTop = rect.top()
+            ,*/bgBottom = rect.bottom()
             ,bgLeft = rect.left()
             ,bgRight = rect.right();
 
@@ -58,11 +72,12 @@ void GanttScene::drawBackground(QPainter *painter, const QRectF &rect)
     pen.setStyle(Qt::DotLine);
     painter->setPen(pen);
 
-    while(startX<bgRight)
-    {
-        painter->drawLine(QPointF(startX,bgTop),QPointF(startX,bgBottom));
-        startX+=m_header->secondHeaderWidth();
-    }
+//    qreal  startX = (qCeil(rect.x() / m_header->secondHeaderWidth()))*m_header->secondHeaderWidth();
+//    while(startX<bgRight)
+//    {
+//        painter->drawLine(QPointF(startX,bgTop),QPointF(startX,bgBottom));
+//        startX+=m_header->secondHeaderWidth();
+//    }
 
     qreal startY = (qCeil(rect.y() / DEFAULT_ITEM_WIDTH))*DEFAULT_ITEM_WIDTH;
 
@@ -73,25 +88,38 @@ void GanttScene::drawBackground(QPainter *painter, const QRectF &rect)
     }
 }
 
+void GanttScene::drawForeground(QPainter *painter, const QRectF &rect)
+{
+
+//    qDebug() <<"scene rect: "<<sceneRect();
+
+    QGraphicsScene::drawForeground(painter,rect);
+
+//    if(m_header->headerMode() == GanttHeader::TimelineMode)
+//    {
+//        QRect headerRect(rect.left(),rect.top(),rect.width(),DEFAULT_HEADER_HEIGHT);
+//        qDebug() << "GanttScene::drawForeground " << headerRect;
+//        // Header background
+//        QLinearGradient linearGradient(QPointF(rect.left(),rect.top()),QPointF(rect.left(),rect.top() + DEFAULT_HEADER_HEIGHT));
+//        linearGradient.setColorAt(0, Qt::cyan);
+//        linearGradient.setColorAt(0.4, Qt::white);
+//        linearGradient.setColorAt(0.6, Qt::white);
+//        linearGradient.setColorAt(1, Qt::cyan);
+//        painter->fillRect(headerRect, linearGradient);
+//        // Center horizontal line
+//        painter->drawLine(QPointF(0,DEFAULT_ITEM_HEIGHT),QPointF(rect.right(),DEFAULT_ITEM_HEIGHT));
+//        // Little and big hatches(with text)
+
+
+
+//    }
+}
+
 void GanttScene::setMode(GanttHeader::GanttPrecisionMode newMode)
 {
     m_header->setMode(newMode);
 
-    for(int i = 0; i < m_items.size(); ++i)
-    {
-        GanttInfoLeaf* p_info = m_items[i]->info();
-        qreal startPos = m_header->dtToX(p_info->start()),
-              itemWidth = m_header->dtToX(p_info->finish()) - startPos;
-        qreal top = m_items[i]->rect().top(),
-                height = m_items[i]->rect().height();
-
-
-        m_items[i]->setPos(startPos, top);
-        m_items[i]->setBoundingRectSize(QSizeF(itemWidth, height));
-    }
-
-
-    update();
+    updateItems();
 }
 
 void GanttScene::addItems(GanttInfoItem* item)
@@ -117,6 +145,48 @@ void GanttScene::updateHeaderPos(int dy)
 {
     m_header->setPos(m_header->scenePos().x(),/*m_header->scenePos().y()+*/dy);
 }
+
+void GanttScene::onViewResize(const QSize&newSize)
+{
+    if(m_header->headerMode() == GanttHeader::TimelineMode)
+    {
+        if(!views().isEmpty())
+        {
+            updateWidth(views()[0]->viewport()->width());
+        }
+        m_header->setCurrentWidth(newSize.width());
+        updateItems();
+    }
+
+    updateSliderRect();
+}
+
+void GanttScene::onViewAdded()
+{
+    m_header->init();
+}
+
+void GanttScene::setHeaderMode(GanttHeader::GanttHeaderMode mode)
+{
+    m_header->setHeaderMode(mode);
+}
+
+GanttHeader::GanttHeaderMode GanttScene::headerMode() const
+{
+    return m_header->headerMode();
+}
+
+void GanttScene::changeExpanding(const QModelIndex &index)
+{
+    if(views().isEmpty())
+        return;
+    GanttGraphicsView* p_view = dynamic_cast<GanttGraphicsView*>(views()[0]);
+    if(!p_view)
+        return;
+
+    p_view->changeExpanding(index);
+}
+
 
 void GanttScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
@@ -151,5 +221,46 @@ void GanttScene::addItemsHelper(GanttInfoItem *item)
                 addItemsHelper(item);
         }
     }
+}
+
+void GanttScene::updateItems()
+{
+    for(int i = 0; i < m_items.size(); ++i)
+    {
+        GanttInfoLeaf* p_info = m_items[i]->info();
+        qreal startPos = m_header->dtToX(p_info->start()),
+              itemWidth = m_header->dtToX(p_info->finish()) - startPos;
+        qreal top = m_items[i]->rect().top(),
+                height = m_items[i]->rect().height();
+
+
+        m_items[i]->setPos(startPos, top);
+        m_items[i]->setBoundingRectSize(QSizeF(itemWidth, height));
+    }
+
+
+    update();
+}
+
+void GanttScene::updateSliderRect()
+{
+    if(!m_slider || !m_header)
+        return;
+
+    if(m_header->headerMode() == GanttHeader::TimelineMode)
+    {
+        if(!views().isEmpty())
+        {
+            QGraphicsView* p_view = views()[0];
+
+
+            m_slider->setSlidersRect(QRectF( MIN_WIDTH_FOR_TIME_VISUALIZING/2
+                                     ,p_view->verticalScrollBar()->value()
+                                     ,width()-MIN_WIDTH_FOR_TIME_VISUALIZING
+                                     ,p_view->height()
+                                     ));
+        }
+    }
+
 }
 

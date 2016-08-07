@@ -41,10 +41,15 @@ public:
     void addItems(GanttInfoItem* item);
 
 
+    QModelIndex indexForItem(const GanttInfoItem* item) const;
+
+
 private:
     GanttInfoItem* itemForIndex(const QModelIndex& index) const;
     GanttInfoLeaf* leafForIndex(const QModelIndex& index) const;
     GanttInfoNode* nodeForIndex(const QModelIndex& index) const;
+
+    void initIndexes(GanttInfoItem* item);
 
 
 private:

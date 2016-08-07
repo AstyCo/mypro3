@@ -2,6 +2,7 @@
 #define GANTTINFOABSTRACT_H
 
 #include <QString>
+#include <QModelIndex>
 
 class GanttInfoNode;
 
@@ -24,12 +25,15 @@ public:
     virtual qreal height() const = 0;
     virtual qreal pos() const;
 
+    QModelIndex index() const;
+    void setIndex(const QModelIndex &index);
+
 protected:
     virtual int indexOf(const GanttInfoItem* p_item) const;
 
 private:
     GanttInfoNode* m_parent;
-
+    QModelIndex m_index;
     QString m_title;
 };
 

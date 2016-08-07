@@ -37,6 +37,11 @@ private slots:
 
     void onScrollGraphicsView(int value);
 
+
+    void on_pushButton_slider_clicked();
+
+    void on_pushButton_header_clicked();
+
 private:
     void updatePos(GanttInfoNode* from);
     void updatePosHelper(GanttInfoItem* item);
