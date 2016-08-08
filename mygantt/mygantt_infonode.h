@@ -28,8 +28,6 @@ public:
 
     qreal height() const;
 
-    QModelIndex find(const GanttInfoItem* item) const;
-
     bool isExpanded() const;
     void setIsExpanded(bool isExpanded);
 

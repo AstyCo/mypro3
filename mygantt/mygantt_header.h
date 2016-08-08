@@ -83,7 +83,7 @@ public:
 
     qreal dtToX(const UtcDateTime& dt) const;
 
-    void setHeaderMode(const GanttHeaderMode &headerMode);
+    bool setHeaderMode(const GanttHeaderMode &headerMode);
     void init();
     GanttHeaderMode headerMode() const;
 
@@ -95,6 +95,8 @@ public:
 
     const UtcDateTime &startDt() const;
     const UtcDateTime &finishDt() const;
+
+    void setRange(UtcDateTime min, UtcDateTime max);
 
     static long long modeToMicrosecond(GanttPrecisionMode mode);
 
@@ -127,6 +129,8 @@ private:
     GanttScene * m_scene;
 
     bool m_isEmpty;
+
+    friend class GanttWidget;
 
 };
 

@@ -6,6 +6,7 @@
 
 
 #include <QScrollBar>
+#include <QMouseEvent>
 
 #include <QDebug>
 
@@ -13,21 +14,57 @@ GanttTreeView::GanttTreeView(QWidget * parent )
 {
     setHeader(new GanttHeaderView(Qt::Horizontal,this));
     setMinimumWidth(GANTTTREEVIEW_MIN_WIDTH);
+    m_hSliderHeight = 15;
+//    setHeaderHidden(true);
+    horizontalScrollBar()->setStyleSheet(
+                QString("QScrollBar {height:%1px;}").arg(m_hSliderHeight));
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setMouseTracking(true);
 }
 
 void GanttTreeView::scrollContentsBy(int dx, int dy)
 {
-    QTreeView::scrollContentsBy(dx,dy);
+
+
+    if(dx)
+        repaintHeader();
 
     if(!m_graphicsView)
         return;
 
+    int oldVal = verticalScrollBar()->value();
     int vs = verticalScrollBar()->value();
     m_graphicsView->verticalScrollBar()->setValue(vs);
+    if(m_graphicsView->verticalScrollBar()->value() != vs)
+        verticalScrollBar()->setValue(m_graphicsView->verticalScrollBar()->value());
+
     QList<QRectF> rects;
     rects.append(m_graphicsView->viewport()->rect());
     m_graphicsView->updateScene(rects);
 
+
+    QTreeView::scrollContentsBy(dx,dy);
+}
+
+void GanttTreeView::mouseMoveEvent(QMouseEvent *event)
+{
+    QPoint pos = event->pos();
+    if(rect().contains(pos) && pos.y() > rect().bottom() - header()->height() - m_hSliderHeight)
+    {
+        setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    }
+    else
+    {
+        setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    }
+    QTreeView::mouseMoveEvent(event);
+}
+
+void GanttTreeView::leaveEvent(QEvent *e)
+{
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    QTreeView::leaveEvent(e);
 }
 void GanttTreeView::setGraphicsView(GanttGraphicsView *graphicsView)
 {
@@ -36,14 +73,7 @@ void GanttTreeView::setGraphicsView(GanttGraphicsView *graphicsView)
 
 void GanttTreeView::repaintHeader()
 {
-    qDebug() << "GanttTreeView::repaintHeader()";
-
-    GanttHeaderView *p_header = dynamic_cast <GanttHeaderView*>(header());
-
-    if(p_header)
-        p_header->update();
-
-    update();
+    header()->reset();
 }
 
 

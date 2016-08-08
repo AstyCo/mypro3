@@ -40,10 +40,6 @@ public:
     void addItems(const QList<GanttInfoItem*>& items);
     void addItems(GanttInfoItem* item);
 
-
-    QModelIndex indexForItem(const GanttInfoItem* item) const;
-
-
 private:
     GanttInfoItem* itemForIndex(const QModelIndex& index) const;
     GanttInfoLeaf* leafForIndex(const QModelIndex& index) const;

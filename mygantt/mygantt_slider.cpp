@@ -12,6 +12,7 @@
 GanttSlider::GanttSlider(QGraphicsItem* parent) :
     QGraphicsObject(parent)
 {
+    m_sliderPos = 0;
     m_penWidth = 2;
     setCursor(Qt::OpenHandCursor);
     setZValue(20);
@@ -37,9 +38,11 @@ void GanttSlider::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
     QBrush fillBrush(QColor(Qt::red));
 
     QPen pen(QBrush(QColor(Qt::black)), 1 ,Qt::SolidLine,Qt::SquareCap,Qt::MiterJoin);
+    painter->setPen(pen);
 
     painter->fillPath(m_sliderShape,borderBrush);
     painter->fillPath(m_rhombus,fillBrush);
+    painter->drawPath(m_rhombus);
 
 }
 

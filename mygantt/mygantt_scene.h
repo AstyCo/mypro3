@@ -41,7 +41,7 @@ public:
     void updateSliderRect();
 
     void onViewResize(const QSize& newSize);
-    void onViewAdded();
+    void onViewAdded(QGraphicsView* view);
 
     void setHeaderMode(GanttHeader::GanttHeaderMode mode);
     GanttHeader::GanttHeaderMode headerMode() const;
@@ -51,6 +51,8 @@ public:
     UtcDateTime slidersDt() const;
 
     GanttSlider *slider() const;
+
+    void setRange(UtcDateTime min, UtcDateTime max);
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
@@ -67,6 +69,8 @@ private:
     QMap<const GanttInfoLeaf*, GanttItem*> m_itemByInfo;
     GanttHeader *m_header;
     GanttSlider *m_slider;
+
+    friend class GanttWidget;
 };
 
 #endif // GANTTSCENE_H

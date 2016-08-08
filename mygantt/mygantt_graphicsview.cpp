@@ -35,6 +35,9 @@ void GanttGraphicsView::scrollContentsBy(int dx, int dy)
 {
     QGraphicsView::scrollContentsBy(dx,dy);
 
+    if(dx)
+        m_scene->invalidate(QRectF(),QGraphicsScene::BackgroundLayer);
+
     if(!m_treeView)
         return;
 
@@ -76,7 +79,7 @@ void GanttGraphicsView::setScene(GanttScene *scene)
     m_scene = scene;
     QGraphicsView::setScene(scene);
 
-    scene->onViewAdded();
+    scene->onViewAdded(this);
 }
 
 

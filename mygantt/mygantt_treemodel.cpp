@@ -251,13 +251,5 @@ void GanttTreeModel::addItems(GanttInfoItem *item)
     initIndexes(m_root);
 }
 
-QModelIndex GanttTreeModel::indexForItem(const GanttInfoItem *item) const
-{
-    if(item == m_root)
-        return QModelIndex();
 
-    QModelIndex res;
-
-
-}
 

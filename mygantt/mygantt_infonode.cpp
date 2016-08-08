@@ -72,17 +72,6 @@ qreal GanttInfoNode::height() const
     }
 }
 
-QModelIndex GanttInfoNode::find(const GanttInfoItem *p_item) const
-{
-
-    foreach(GanttInfoItem* item, m_items)
-    {
-
-    }
-
-
-}
-
 int GanttInfoNode::indexOf(const GanttInfoItem * p_item) const
 {
     GanttInfoItem *p = const_cast<GanttInfoItem*>(p_item);

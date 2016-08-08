@@ -34,9 +34,6 @@ int GanttInfoItem::indexOf(const GanttInfoItem* p_item) const
 
 QModelIndex GanttInfoItem::index() const
 {
-    if(!m_index.isValid())
-        qDebug() << "index is not valid";
-
     return m_index;
 }
 

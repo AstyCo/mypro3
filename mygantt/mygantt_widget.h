@@ -44,15 +44,12 @@ private slots:
 
     void on_pushButton_header_clicked();
 
+public slots:
     void repaintDtHeader();
 
 private:
     void updatePos(GanttInfoNode* from);
     void updatePosHelper(GanttInfoItem* item);
-
-
-
-    void onResize();
 
 private:
     Ui::GanttWidget *ui;

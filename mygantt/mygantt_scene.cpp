@@ -150,10 +150,7 @@ void GanttScene::onViewResize(const QSize&newSize)
 {
     if(m_header->headerMode() == GanttHeader::TimelineMode)
     {
-        if(!views().isEmpty())
-        {
-            updateWidth(views()[0]->viewport()->width());
-        }
+        updateWidth(newSize.width());
         m_header->setCurrentWidth(newSize.width());
         updateItems();
     }
@@ -161,14 +158,29 @@ void GanttScene::onViewResize(const QSize&newSize)
     updateSliderRect();
 }
 
-void GanttScene::onViewAdded()
+void GanttScene::onViewAdded(QGraphicsView* view)
 {
     m_header->init();
+    onViewResize(view->viewport()->size());
 }
 
 void GanttScene::setHeaderMode(GanttHeader::GanttHeaderMode mode)
 {
-    m_header->setHeaderMode(mode);
+    if(m_header->setHeaderMode(mode))
+    {
+        if(mode == GanttHeader::TimelineMode)
+        {
+            m_header->updateHeader();
+        }
+        else if(mode == GanttHeader::GanttDiagramMode)
+        {
+            updateItems();
+
+        }
+        if(!views().isEmpty())
+            onViewAdded(views()[0]);
+
+    }
 }
 
 GanttHeader::GanttHeaderMode GanttScene::headerMode() const
@@ -239,6 +251,8 @@ void GanttScene::addItemsHelper(GanttInfoItem *item)
 
 void GanttScene::updateItems()
 {
+    qDebug() << "updateItems";
+
     for(int i = 0; i < m_items.size(); ++i)
     {
         GanttInfoLeaf* p_info = m_items[i]->info();
@@ -261,6 +275,12 @@ GanttSlider *GanttScene::slider() const
     return m_slider;
 }
 
+void GanttScene::setRange(UtcDateTime min, UtcDateTime max)
+{
+    m_header->setRange(min,max);
+    updateItems();
+}
+
 void GanttScene::updateSliderRect()
 {
     if(!m_slider || !m_header)
@@ -276,6 +296,20 @@ void GanttScene::updateSliderRect()
             m_slider->setSlidersRect(QRectF( MIN_WIDTH_FOR_TIME_VISUALIZING/2
                                      ,p_view->verticalScrollBar()->value()
                                      ,width()-MIN_WIDTH_FOR_TIME_VISUALIZING
+                                     ,p_view->height()
+                                     ));
+        }
+    }
+    else if(m_header->headerMode() == GanttHeader::GanttDiagramMode)
+    {
+        if(!views().isEmpty())
+        {
+            QGraphicsView* p_view = views()[0];
+
+
+            m_slider->setSlidersRect(QRectF( sceneRect().left()
+                                     ,p_view->verticalScrollBar()->value()
+                                     ,sceneRect().width()
                                      ,p_view->height()
                                      ));
         }

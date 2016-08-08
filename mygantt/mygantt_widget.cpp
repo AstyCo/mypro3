@@ -22,6 +22,7 @@ GanttWidget::GanttWidget(QWidget *parent) :
     ui->treeView->setContentsMargins(0,0,0,0);
     ui->treeView->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     ui->treeView->verticalScrollBar()->setStyleSheet("QScrollBar {width:0px;}");
+//    ui->treeView->horizontalScrollBar()->setStyleSheet("QScrollBar {height:5px;}");
 
     ui->treeView->setGraphicsView(ui->ganttView);
     ui->ganttView->setTreeView(ui->treeView);
@@ -232,10 +233,6 @@ void GanttWidget::updatePosHelper(GanttInfoItem *item)
     }
 }
 
-void GanttWidget::onResize()
-{
-
-}
 
 
 
@@ -243,7 +240,14 @@ void GanttWidget::onResize()
 
 void GanttWidget::on_pushButton_slider_clicked()
 {
+//    m_scene->slider()->setVisible(!(m_scene->slider()->isVisible()));
 
+    if(UtcDateTime(m_scene->m_header->m_minDt).addSecs(13*SECONDS_IN_MINUTE) > UtcDateTime(m_scene->m_header->m_maxDt).addSecs(-13*SECONDS_IN_MINUTE))
+        m_scene->setRange( UtcDateTime(m_scene->m_header->m_minDt).addSecs(SECONDS_IN_MINUTE/2)
+                           ,UtcDateTime(m_scene->m_header->m_maxDt).addSecs(-SECONDS_IN_MINUTE/2) );
+    else
+        m_scene->setRange( UtcDateTime(m_scene->m_header->m_minDt).addSecs(13*SECONDS_IN_MINUTE)
+                           ,UtcDateTime(m_scene->m_header->m_maxDt).addSecs(-13*SECONDS_IN_MINUTE) );
 }
 
 void GanttWidget::on_pushButton_header_clicked()

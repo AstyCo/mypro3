@@ -17,11 +17,17 @@ public:
 protected:
     void scrollContentsBy(int dx, int dy);
 
+    void mouseMoveEvent(QMouseEvent *event);
+    void leaveEvent(QEvent *);
+
 private:
 
     GanttGraphicsView* m_graphicsView;
 
+    int m_hSliderHeight;
+
     friend class GanttGraphicsView;
+    friend class GanttHeaderView;
 
 };
 

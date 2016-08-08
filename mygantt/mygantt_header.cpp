@@ -3,6 +3,7 @@
 #include "mygantt_scene.h"
 #include "mygantt_infoleaf.h"
 #include "mygantt_infonode.h"
+#include "mygantt_widget.h"
 
 #include "mygantt_graphicsview.h"
 
@@ -89,7 +90,8 @@ void GanttHeader::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
                 painter->drawLine(QPointF(curOffset,DEFAULT_ITEM_HEIGHT),QPointF(curOffset,DEFAULT_ITEM_HEIGHT*(5.0/4))); // little hatch
 
             step++;
-            curOffset+=MIN_DISTANCE_BETWEEN_HATCHES*m_stretchFactor;
+            curOffset=dtToX(m_startDt.addMicroseconds((step * modeToMicrosecond(m_mode) * 1.0 / (LITTLE_HATCH_COUNT+1))));
+
         } while(curOffset<maxOffset+1);
 
 //        qDebug() << "curOffset: "<< QString::number(curOffset)<< "max: "<< QString::number(maxOffset);
@@ -130,19 +132,18 @@ void GanttHeader::updateHeader()
 
             while(dt<nextDt)
             {
-                QGraphicsRectItemWithText *p_secondHeadeItem = new QGraphicsRectItemWithText( dt.toString(secondHeaderFormat(m_mode))
+                QGraphicsRectItemWithText *p_secondHeaderItem = new QGraphicsRectItemWithText( dt.toString(secondHeaderFormat(m_mode))
                                                                                               ,QRectF(curOffset,DEFAULT_ITEM_WIDTH,secondHeaderWidth(),DEFAULT_ITEM_WIDTH)
-                                                                                              ,this);
+                                                                                              ,p_topHeaderItem);
 
                 if(m_mode == days1)
                 {
                     Qt::DayOfWeek d = (Qt::DayOfWeek)dt.date().dayOfWeek();
                     if (((d == Qt::Saturday) || (d == Qt::Sunday)))
-                        p_secondHeadeItem->setTextColor( QColor(230,0,0) );
+                        p_secondHeaderItem->setTextColor( QColor(230,0,0) );
                 }
 
-                p_secondHeadeItem->setParentItem(p_topHeaderItem);
-                m_items.append(p_secondHeadeItem);
+                m_items.append(p_secondHeaderItem);
                 curOffset+=secondHeaderWidth();
 
                 dt = nextSecondHeaderDt(dt,m_mode);
@@ -158,9 +159,9 @@ void GanttHeader::updateHeader()
     else if(m_headerMode == TimelineMode)
     {
         calculateTimeMode();
-
-
         initRange();
+
+
     }
 }
 
@@ -269,7 +270,7 @@ void GanttHeader::initRange()
                         m_maxDt.date(),QTime(m_minDt.hour(),m_maxDt.minute(),secEnd)
                         );
             if(secEnd < m_maxDt.second())
-                m_finishDt.addSecs(15);
+                m_finishDt = m_finishDt.addSecs(15);
             break;
         }
         case seconds30:
@@ -282,7 +283,7 @@ void GanttHeader::initRange()
                         m_maxDt.date(),QTime(m_minDt.hour(),m_maxDt.minute(),secEnd)
                         );
             if(secEnd < m_maxDt.second())
-                m_finishDt.addSecs(30);
+                m_finishDt = m_finishDt.addSecs(30);
             break;
         }
         case minutes1:
@@ -292,7 +293,7 @@ void GanttHeader::initRange()
                         ,QTime(m_maxDt.hour(),m_maxDt.minute())
                         );
             if(m_finishDt < m_maxDt)
-                m_finishDt.addSecs(SECONDS_IN_MINUTE);
+                m_finishDt = m_finishDt.addSecs(SECONDS_IN_MINUTE);
             break;
 
         case minutes15:
@@ -305,7 +306,7 @@ void GanttHeader::initRange()
                         m_maxDt.date(),QTime(m_maxDt.hour(),minEnd)
                         );
             if(minEnd < m_maxDt.minute())
-                m_finishDt.addSecs(15*SECONDS_IN_MINUTE);
+                m_finishDt = m_finishDt.addSecs(15*SECONDS_IN_MINUTE);
             break;
         }
         case minutes30:
@@ -318,7 +319,7 @@ void GanttHeader::initRange()
                         m_maxDt.date(),QTime(m_maxDt.hour(),minEnd)
                         );
             if(minEnd < m_maxDt.minute())
-                m_finishDt.addSecs(30*SECONDS_IN_MINUTE);
+                m_finishDt = m_finishDt.addSecs(30*SECONDS_IN_MINUTE);
             break;
         }
         case hours1:
@@ -328,8 +329,10 @@ void GanttHeader::initRange()
                         (QDate(m_maxDt.year(),m_maxDt.month(),m_maxDt.day()))
                         ,QTime(m_maxDt.hour(),0)
                         );
-            if(m_finishDt != m_maxDt)
-                m_finishDt.addSecs(SECONDS_IN_HOUR);
+
+
+            if(m_finishDt < m_maxDt)
+                m_finishDt = m_finishDt.addSecs(SECONDS_IN_HOUR);
 
             break;
         case days1:
@@ -337,16 +340,16 @@ void GanttHeader::initRange()
             m_finishDt = UtcDateTime(
                         m_maxDt.date()
                         );
-            if(m_finishDt != m_maxDt)
-                m_finishDt.addDays(1);
+            if(m_finishDt < m_maxDt)
+                m_finishDt = m_finishDt.addDays(1);
             break;
         case months1:
             m_startDt.setDateTime(QDateTime(QDate(m_minDt.year(),m_minDt.month(),1)));
             m_finishDt = UtcDateTime(
                         (QDate(m_maxDt.year(),m_maxDt.month(),1))
                         );
-            if(m_finishDt != m_maxDt)
-                m_finishDt.addMonths(1);
+            if(m_finishDt < m_maxDt)
+                m_finishDt = m_finishDt.addMonths(1);
             break;
         default:
             qDebug() <<"GanttHeader::initRange() out of range";
@@ -356,6 +359,11 @@ void GanttHeader::initRange()
     }
 
     setLengthInMicroseconds(m_startDt.microsecondsTo(m_finishDt));
+
+    GanttWidget *p_widget;
+    if(m_scene && (p_widget = dynamic_cast<GanttWidget*>(m_scene->parent())))
+        p_widget->repaintDtHeader();
+
 //    qDebug()  << "m_lengthInMicroseconds = " << QString::number(m_lengthInMicroseconds);
 }
 
@@ -409,83 +417,36 @@ QString GanttHeader::secondHeaderFormat(GanttHeader::GanttPrecisionMode mode)
 
 UtcDateTime GanttHeader::nextTopHeaderDt(const UtcDateTime &curDt,GanttHeader::GanttPrecisionMode mode)
 {
-    switch(mode)
-    {
-    case seconds1:
-        return curDt.addSecs(SECONDS_IN_MINUTE);
-        break;
-    case minutes1:
-        return curDt.addSecs(SECONDS_IN_HOUR);
-        break;
-    case hours1:
-        return curDt.addDays(1);
-        break;
-    case days1:
-        return curDt.addMonths(1);
-        break;
-    case months1:
-        return curDt.addYears(1);
-        break;
-    default:
-        break;
-    }
-
-    return curDt;
+    int i_mode = mode;
+    if(i_mode)
+        i_mode--;
+    return curDt.addMicroseconds(
+                modeToMicrosecond(static_cast<GanttPrecisionMode>(i_mode)));
 }
 
 UtcDateTime GanttHeader::nextSecondHeaderDt(const UtcDateTime &curDt,GanttHeader::GanttPrecisionMode mode)
 {
-    switch(mode)
-    {
-    case seconds1:
-        return curDt.addSecs(1);
-        break;
-    case minutes1:
-        return curDt.addSecs(SECONDS_IN_MINUTE);
-        break;
-    case hours1:
-        return curDt.addSecs(SECONDS_IN_HOUR);
-        break;
-    case days1:
-        return curDt.addDays(1);
-        break;
-    case months1:
-        return curDt.addMonths(1);
-        break;
-    default:
-        break;
-    }
-
-    return curDt;
+    return curDt.addMicroseconds(modeToMicrosecond(mode));
 }
 
 qreal GanttHeader::secondHeaderWidth() const
 {
-    switch(m_mode)
-    {
-    case seconds1:
-    case minutes1:
-    case hours1:
-    case days1:
-        return DEFAULT_ITEM_WIDTH;
-        break;
-    case months1:
+    if(m_mode == months1)
         return DEFAULT_MONTH_WIDTH;
-        break;
-    default:
-        break;
-    }
-    return 0;
+
+    return DEFAULT_ITEM_WIDTH;
 }
 
 void GanttHeader::clear()
 {
     foreach(QGraphicsRectItemWithText* item, m_items)
     {
+        item->setParentItem(NULL);
         m_scene->removeItem(item);
         m_items.removeOne(item);
         delete item;
     }
+    m_scene->invalidate();
 }
 
 qreal GanttHeader::dtToX(const UtcDateTime &dt) const
@@ -546,18 +507,13 @@ QString GanttHeader::textForDtStep(int step_hatch) const
     switch(m_mode)
     {
     case seconds1:
-
-        break;
+        return m_startDt.addSecs( step).toString("mm:ss");
     case seconds15:
-
-        break;
+        return m_startDt.addSecs( 15 * step).toString("mm:ss");
     case seconds30:
-
-        break;
+        return m_startDt.addSecs( 30 * step).toString("mm:ss");
     case minutes1:
-
-        break;
-
+        return m_startDt.addSecs( SECONDS_IN_MINUTE * step).toString("hh:mm");
     case minutes15:
         return m_startDt.addSecs(15* SECONDS_IN_MINUTE * step).toString("hh:mm");
     case minutes30:
@@ -574,6 +530,7 @@ QString GanttHeader::textForDtStep(int step_hatch) const
         qDebug() <<"GanttHeader::textForDtStep out of range";
        return QString();
     }
+    return QString();
 }
 
 void GanttHeader::setLengthInMicroseconds(long long lengthInMicroseconds)
@@ -598,6 +555,20 @@ const UtcDateTime &GanttHeader::finishDt() const
 //    if(m_headerMode == GanttDiagramMode)
         return m_finishDt;
 
+}
+
+void GanttHeader::setRange(UtcDateTime min, UtcDateTime max)
+{
+    if(min>max)
+        return;
+
+    qDebug() << "GanttHeader::setRange "
+             << min <<' ' <<max;
+
+    m_minDt = min;
+    m_maxDt = max;
+
+    updateHeader();
 }
 
 long long GanttHeader::modeToMicrosecond(GanttPrecisionMode mode)
@@ -684,37 +655,57 @@ void GanttHeader::calculateTimeMode()
 
     if(m_mode != mode)
     {
+        qDebug() << "mode changed " <<QString::number(mode);
         m_mode = mode;
         initRange();
     }
 
     qreal newCoef = (m_startDt.microsecondsTo(m_finishDt)*1.0/((m_currentWidth-MIN_WIDTH_FOR_TIME_VISUALIZING)/MIN_WIDTH_FOR_TIME_VISUALIZING));
 
-    m_stretchFactor = modeToMicrosecond(mode) * 1.0 / newCoef;
+    if(newCoef> modeToMicrosecond(m_mode))
+    {
+        qDebug() << "newCoeff doesn\'t fit";
+        m_mode = (GanttPrecisionMode)((int)mode - 1);
+        initRange();
+        newCoef = (m_startDt.microsecondsTo(m_finishDt)*1.0/((m_currentWidth-MIN_WIDTH_FOR_TIME_VISUALIZING)/MIN_WIDTH_FOR_TIME_VISUALIZING));
+
+    }
+
+
+    m_stretchFactor = modeToMicrosecond(m_mode) * 1.0 / newCoef;
 }
 
-void GanttHeader::setHeaderMode(const GanttHeaderMode &headerMode)
+bool GanttHeader::setHeaderMode(const GanttHeaderMode &headerMode)
 {
     if(headerMode == m_headerMode)
-        return;
+        return false;
     m_headerMode = headerMode;
 
     if(!m_scene)
-        return;
+        return false;
 
     GanttGraphicsView *p_view;
 
     if(!m_scene->views().isEmpty())
         p_view = dynamic_cast<GanttGraphicsView*>(m_scene->views()[0]);
 
-    else if(headerMode == TimelineMode)
+    if(headerMode == TimelineMode)
     {
         clear();
+    }
+    else if(headerMode == GanttDiagramMode)
+    {
+        if(m_mode == minutes15 || m_mode == minutes30)
+            setMode(hours1);
+        else if (m_mode == seconds15 || m_mode == seconds30)
+            setMode(minutes1);
     }
 
     init();
 
     updateHeader();
+
+    return true;
 }
 
 void GanttHeader::init()
@@ -727,19 +718,18 @@ void GanttHeader::init()
     if(!m_scene->views().isEmpty())
         p_view = dynamic_cast<GanttGraphicsView*>(m_scene->views()[0]);
 
+    if(!p_view)
+        return;
+
     if(m_headerMode == GanttDiagramMode)
     {
-        if(p_view)
-            p_view->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+        p_view->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     }
     else if(m_headerMode == TimelineMode)
     {
-        if(p_view)
-        {
-            p_view->setMinimumWidth(GANTTGRAPHICSVIEW_MIN_WIDTH);
-            p_view->setMaximumWidth(100000);
-            p_view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-        }
+        p_view->setMinimumWidth(GANTTGRAPHICSVIEW_MIN_WIDTH);
+        p_view->setMaximumWidth(100000);
+        p_view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     }
 }
 

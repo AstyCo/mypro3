@@ -1,7 +1,7 @@
 #include "mygantt_headerview.h"
 
 #include "mygantt_widget.h"
-
+#include "mygantt_treeview.h"
 
 #include <QPaintEvent>
 #include <QPainter>
@@ -17,34 +17,14 @@
 GanttHeaderView::GanttHeaderView(Qt::Orientation orientation, QWidget * parent) :
     QHeaderView(orientation,parent)
 {
-
+    m_view = dynamic_cast<GanttTreeView*>(parent);
 }
 
 void GanttHeaderView::paintEvent(QPaintEvent *e)
 {
-    qDebug() << "GanttHeaderView::paintEvent";
-
-
-
-//    if(e->rect() != rect())
-//    {
-//        // Don't draw columns
-
-//        qDebug() << e->rect();
-
-//        e->accept();
-//        QPaintEvent ev(rect());
-//        paintEvent(&ev);
-//        return;
-//    }
-//    QHeaderView::paintEvent(e);
-
     static GanttWidget* p_parentWidget = NULL;
     if(!p_parentWidget)
     {
-        qDebug() << parentWidget()
-                 << parentWidget()->parentWidget();
-
         if(parentWidget()
                 && parentWidget()->parentWidget())
             if(!(p_parentWidget = dynamic_cast<GanttWidget*>(parentWidget()
@@ -54,62 +34,37 @@ void GanttHeaderView::paintEvent(QPaintEvent *e)
     }
 
 
-    QPainter painter;
+    QPainter painter(viewport());
 
-    if(!painter.begin(viewport()) && !painter.begin(this))
-    {
-        qDebug() << "GanttHeaderView::paintEvent painter initializing failed";
-        return;
-    }
+    QPen headerPen(QBrush(Qt::white)
+                   ,1,Qt::SolidLine,Qt::SquareCap,Qt::MiterJoin);
+    QFont dtFont("Goudy Old Style", 10,QFont::DemiBold),
+            utcFont("Goudy Old Style", 12,QFont::DemiBold);
 
-    qDebug() <<"viewport "<< viewport();
-
-    QFontMetrics fmetrics(painter.font(),painter.device());
+    QFontMetrics fmetrics(utcFont,painter.device());
 
 
     QRect utcRect = fmetrics.tightBoundingRect("UTC").adjusted(-3,-3,3,3);
-
-    qDebug() << "utcRect" << utcRect;
 
     QRect dtRect = rect().adjusted(0,0, - utcRect.width() - HEADERVIEW_MARGIN , 0);
 
     utcRect.moveTop((dtRect.bottom() - utcRect.height())/2);
     utcRect.moveLeft(dtRect.right() - HEADERVIEW_MARGIN);
 
-    qDebug() << "dtRect" << dtRect
-             << "utcRect" << utcRect;
+    painter.fillRect(rect(),QBrush(Qt::blue));
 
-    painter.fillRect(rect(),QBrush(Qt::cyan));
+    painter.setPen(headerPen);
 
+    painter.setFont(dtFont);
     painter.drawText(dtRect,p_parentWidget->slidersDt().toString(),QTextOption(Qt::AlignCenter));
 
-    painter.drawRect(utcRect);
+    painter.drawRect(utcRect);  
+    painter.setFont(utcFont);
     painter.drawText(utcRect,"UTC",QTextOption(Qt::AlignCenter));
 
     e->accept();
 
 }
 
-void GanttHeaderView::paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const
-{
-    //
-    qDebug() << "GanttHeaderView::paintSection" ;
-}
 
-bool GanttHeaderView::event( QEvent *e)
-{
-    qDebug() <<"event "
-            << e;
-    return QHeaderView::event(e);
-}
-
-void GanttHeaderView::update()
-{
-    QPaintEvent ev(rect());
-    paintEvent(&ev);
-
-
-
-    QHeaderView::update();
-}
 
