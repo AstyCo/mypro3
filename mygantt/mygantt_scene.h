@@ -48,6 +48,10 @@ public:
 
     void changeExpanding(const QModelIndex& index);
 
+    UtcDateTime slidersDt() const;
+
+    GanttSlider *slider() const;
+
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
 

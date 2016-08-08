@@ -29,6 +29,8 @@ public:
     void addItems(GanttInfoItem* item);
     void addItems(const QList<GanttInfoItem*>& items);
 
+    UtcDateTime slidersDt() const;
+
 private slots:
     void on_comboBox_mode_currentIndexChanged(int index);
 
@@ -41,6 +43,8 @@ private slots:
     void on_pushButton_slider_clicked();
 
     void on_pushButton_header_clicked();
+
+    void repaintDtHeader();
 
 private:
     void updatePos(GanttInfoNode* from);

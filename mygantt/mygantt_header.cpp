@@ -736,7 +736,7 @@ void GanttHeader::init()
     {
         if(p_view)
         {
-            p_view->setMinimumWidth(200);
+            p_view->setMinimumWidth(GANTTGRAPHICSVIEW_MIN_WIDTH);
             p_view->setMaximumWidth(100000);
             p_view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         }

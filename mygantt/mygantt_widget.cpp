@@ -36,6 +36,7 @@ GanttWidget::GanttWidget(QWidget *parent) :
 
     connect(ui->treeView,SIGNAL(expanded(QModelIndex)), this,SLOT(expanded(QModelIndex)));
     connect(ui->treeView,SIGNAL(collapsed(QModelIndex)), this,SLOT(collapsed(QModelIndex)));
+    connect(m_scene->slider(),SIGNAL(sliderPosChanged(qreal)),this,SLOT(repaintDtHeader()));
 
     GanttInfoNode *test1 = new GanttInfoNode
             ,*test3 = new GanttInfoNode;
@@ -129,6 +130,13 @@ void GanttWidget::addItems(const QList<GanttInfoItem *> &items)
 {
     m_model->addItems(items);
     m_scene->addItems(items);
+}
+
+UtcDateTime GanttWidget::slidersDt() const
+{
+    if(!m_scene)
+        return UtcDateTime();
+    return m_scene->slidersDt();
 }
 
 void GanttWidget::on_comboBox_mode_currentIndexChanged(int index)
@@ -244,4 +252,9 @@ void GanttWidget::on_pushButton_header_clicked()
         m_scene->setHeaderMode(GanttHeader::GanttDiagramMode);
     else
         m_scene->setHeaderMode(GanttHeader::TimelineMode);
+}
+
+void GanttWidget::repaintDtHeader()
+{
+    ui->treeView->repaintHeader();
 }

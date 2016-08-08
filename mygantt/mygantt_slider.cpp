@@ -79,28 +79,7 @@ void GanttSlider::updateShape()
 }
 
 
-QVariant GanttSlider::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value)
-{
-    if(change == QGraphicsItem::ItemPositionChange && scene())
-    {
-        qreal newHPos = value.toPointF().x();
 
-        if(newHPos < m_slidersRect.left())
-        {
-            newHPos = m_slidersRect.left();
-        }
-        if(newHPos > m_slidersRect.right())
-        {
-            newHPos = m_slidersRect.right();
-        }
-
-        if(m_slidersRect.width())
-            setSliderPos((newHPos-m_slidersRect.left())/(m_slidersRect.width()));
-
-        return QGraphicsItem::itemChange(change,value);
-    }
-    return QGraphicsItem::itemChange(change,value);
-}
 
 void GanttSlider::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {

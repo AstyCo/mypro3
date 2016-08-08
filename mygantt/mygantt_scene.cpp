@@ -187,6 +187,20 @@ void GanttScene::changeExpanding(const QModelIndex &index)
     p_view->changeExpanding(index);
 }
 
+UtcDateTime GanttScene::slidersDt() const
+{
+    if(!m_header || !m_slider)
+        return UtcDateTime();
+
+    long long len = m_header->startDt().microsecondsTo(m_header->finishDt());
+
+    len = 1.0 * len * m_slider->sliderPos();
+
+    UtcDateTime res = m_header->startDt();
+
+    return res.addMicroseconds(len);
+}
+
 
 void GanttScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
@@ -240,6 +254,11 @@ void GanttScene::updateItems()
 
 
     update();
+}
+
+GanttSlider *GanttScene::slider() const
+{
+    return m_slider;
 }
 
 void GanttScene::updateSliderRect()

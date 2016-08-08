@@ -29,7 +29,6 @@ public:
     void setPos(qreal x, qreal y);
 
 protected:
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
