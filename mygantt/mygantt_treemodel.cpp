@@ -16,6 +16,7 @@ GanttTreeModel::GanttTreeModel(GanttInfoNode *root,QObject * parent)
         m_root = new GanttInfoNode;
 
     m_root->setIsExpanded(true);
+    initIndexes(m_root);
 }
 
 QVariant GanttTreeModel::data(const QModelIndex &index, int role) const
@@ -94,22 +95,22 @@ QVariant GanttTreeModel::headerData(int section, Qt::Orientation orientation,
     }
 
 
-    if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
-    {
-        switch(section)
-        {
-        case nameField:
-            return trUtf8("Название");
-        case startField:
-            return trUtf8("Начало");
-        case finishField:
-            return trUtf8("Конец");
-        case durationField:
-            return trUtf8("Длительность");
-        default:
-            return QVariant();
-        }
-    }
+//    if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
+//    {
+//        switch(section)
+//        {
+//        case nameField:
+//            return trUtf8("Название");
+//        case startField:
+//            return trUtf8("Начало");
+//        case finishField:
+//            return trUtf8("Конец");
+//        case durationField:
+//            return trUtf8("Длительность");
+//        default:
+//            return QVariant();
+//        }
+//    }
 
     return QVariant();
 }
@@ -130,10 +131,12 @@ QModelIndex GanttTreeModel::index(int row, int column, const QModelIndex &parent
         parentNode = nodeForIndex(parent);
 
     GanttInfoItem *childItem = parentNode->child(row);
+
     if (childItem)
         return createIndex(row, column, childItem);
     else
         return QModelIndex();
+
 }
 
 GanttInfoItem *GanttTreeModel::itemForIndex(const QModelIndex &index) const
@@ -164,6 +167,18 @@ GanttInfoNode *GanttTreeModel::nodeForIndex(const QModelIndex &index) const
     }
 
     return dynamic_cast<GanttInfoNode*>(itemForIndex(index));
+}
+
+void GanttTreeModel::initIndexes(GanttInfoItem *item)
+{
+    item->setIndex((item==m_root)?(QModelIndex()):(createIndex(item->row(),0,item)));
+
+    GanttInfoNode *p_node = dynamic_cast<GanttInfoNode*>(item);
+    if(p_node)
+    {
+        for(int i = 0; i < p_node->size(); ++i)
+            initIndexes(p_node->child(i));
+    }
 }
 
 
@@ -207,7 +222,8 @@ int GanttTreeModel::rowCount(const QModelIndex &parent) const
 
 int GanttTreeModel::columnCount(const QModelIndex &parent) const
 {
-    GanttInfoNode *parentNode;
+    Q_UNUSED(parent);
+//    GanttInfoNode *parentNode;
 
 
 //    if (parent.column() > 0)
@@ -226,10 +242,22 @@ int GanttTreeModel::columnCount(const QModelIndex &parent) const
 void GanttTreeModel::addItems(const QList<GanttInfoItem *> &items)
 {
     m_root->append(items);
+    initIndexes(m_root);
 }
 
 void GanttTreeModel::addItems(GanttInfoItem *item)
 {
     m_root->append(item);
+    initIndexes(m_root);
+}
+
+QModelIndex GanttTreeModel::indexForItem(const GanttInfoItem *item) const
+{
+    if(item == m_root)
+        return QModelIndex();
+
+    QModelIndex res;
+
+
 }
 

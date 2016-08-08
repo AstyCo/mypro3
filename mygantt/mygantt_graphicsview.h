@@ -3,6 +3,8 @@
 
 #include <QGraphicsView>
 
+#include <QModelIndex>
+
 class GanttWidget;
 class GanttScene;
 
@@ -15,10 +17,11 @@ public:
     GanttGraphicsView(QGraphicsScene * scene, QWidget * parent = 0);
 
 
-
     void setScene(GanttScene *scene);
 
     void setTreeView(GanttTreeView *treeView);
+
+    void changeExpanding(const QModelIndex& index);
 
 protected:
     void resizeEvent(QResizeEvent *event);

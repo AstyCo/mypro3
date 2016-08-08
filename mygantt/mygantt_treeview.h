@@ -12,6 +12,8 @@ public:
 
     void setGraphicsView(GanttGraphicsView *graphicsView);
 
+    void repaintHeader();
+
 protected:
     void scrollContentsBy(int dx, int dy);
 

@@ -21,16 +21,30 @@ void GanttInfoItem::setTitle(const QString &title)
 int GanttInfoItem::row() const
 {
     if(m_parent)
-    {
-        m_parent->indexOf(this);
-    }
+        return m_parent->indexOf(this);
+
     return 0;
 }
 
 int GanttInfoItem::indexOf(const GanttInfoItem* p_item) const
 {
+    Q_UNUSED(p_item);
     return -1;
 }
+
+QModelIndex GanttInfoItem::index() const
+{
+    if(!m_index.isValid())
+        qDebug() << "index is not valid";
+
+    return m_index;
+}
+
+void GanttInfoItem::setIndex(const QModelIndex &index)
+{
+    m_index = index;
+}
+
 void GanttInfoItem::setParent(GanttInfoNode *parent)
 {
     m_parent = parent;

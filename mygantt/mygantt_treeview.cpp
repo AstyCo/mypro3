@@ -1,12 +1,18 @@
 #include "mygantt_treeview.h"
+#include "mygantt_headerview.h"
 
+#include "mygantt_globalvalues.h"
 #include "mygantt_graphicsview.h"
+
 
 #include <QScrollBar>
 
+#include <QDebug>
+
 GanttTreeView::GanttTreeView(QWidget * parent )
 {
-
+    setHeader(new GanttHeaderView(Qt::Horizontal,this));
+    setMinimumWidth(GANTTTREEVIEW_MIN_WIDTH);
 }
 
 void GanttTreeView::scrollContentsBy(int dx, int dy)
@@ -26,6 +32,18 @@ void GanttTreeView::scrollContentsBy(int dx, int dy)
 void GanttTreeView::setGraphicsView(GanttGraphicsView *graphicsView)
 {
     m_graphicsView = graphicsView;
+}
+
+void GanttTreeView::repaintHeader()
+{
+    qDebug() << "GanttTreeView::repaintHeader()";
+
+    GanttHeaderView *p_header = dynamic_cast <GanttHeaderView*>(header());
+
+    if(p_header)
+        p_header->update();
+
+    update();
 }
 
 

@@ -36,6 +36,7 @@ GanttWidget::GanttWidget(QWidget *parent) :
 
     connect(ui->treeView,SIGNAL(expanded(QModelIndex)), this,SLOT(expanded(QModelIndex)));
     connect(ui->treeView,SIGNAL(collapsed(QModelIndex)), this,SLOT(collapsed(QModelIndex)));
+    connect(m_scene->slider(),SIGNAL(sliderPosChanged(qreal)),this,SLOT(repaintDtHeader()));
 
     GanttInfoNode *test1 = new GanttInfoNode
             ,*test3 = new GanttInfoNode;
@@ -45,31 +46,54 @@ GanttWidget::GanttWidget(QWidget *parent) :
             ,*item31 = new GanttInfoLeaf
             ,*item32 = new GanttInfoLeaf;
 
-    item11->setStart(UtcDateTime(QDate(2015,01,29)));
-    item11->setFinish(UtcDateTime(QDate(2015,01,29),QTime(5,0)));
+//    item11->setStart(UtcDateTime(QDate(2015,01,29)));
+//    item11->setFinish(UtcDateTime(QDate(2015,01,29),QTime(5,0)));
+//    item11->setColor(Qt::yellow);
+//    item11->setTitle("leaf11");
+
+//    item12->setStart(UtcDateTime(QDate(2015,01,29),QTime(10,0)));
+//    item12->setFinish(UtcDateTime(QDate(2015,01,30),QTime(5,0)));
+//    item12->setColor(Qt::yellow);
+//    item12->setTitle("leaf12");
+
+//    item21->setStart(UtcDateTime(QDate(2015,01,30),QTime(11,0)));
+//    item21->setFinish(UtcDateTime(QDate(2015,01,30),QTime(14,0)));
+//    item21->setColor(Qt::red);
+//    item21->setTitle("leaf21");
+
+//    item31->setStart(UtcDateTime(QDate(2015,01,31),QTime(10,0)));
+//    item31->setFinish(UtcDateTime(QDate(2015,02,02),QTime(5,0)));
+//    item31->setColor(Qt::green);
+//    item31->setTitle("leaf31");
+
+//    item32->setStart(UtcDateTime(QDate(2015,02,02),QTime(10,0)));
+//    item32->setFinish(UtcDateTime(QDate(2015,02,02),QTime(20,0)));
+//    item32->setColor(Qt::green);
+//    item32->setTitle("leaf32");
+    item11->setStart(UtcDateTime(QDate(2015,02,02)));
+    item11->setFinish(UtcDateTime(QDate(2015,02,02),QTime(1,30)));
     item11->setColor(Qt::yellow);
     item11->setTitle("leaf11");
 
-    item12->setStart(UtcDateTime(QDate(2015,01,29),QTime(10,0)));
-    item12->setFinish(UtcDateTime(QDate(2015,01,30),QTime(5,0)));
+    item12->setStart(UtcDateTime(QDate(2015,02,02),QTime(1,30,30)));
+    item12->setFinish(UtcDateTime(QDate(2015,02,02),QTime(1,32)));
     item12->setColor(Qt::yellow);
     item12->setTitle("leaf12");
 
-    item21->setStart(UtcDateTime(QDate(2015,01,30),QTime(11,0)));
-    item21->setFinish(UtcDateTime(QDate(2015,01,30),QTime(14,0)));
+    item21->setStart(UtcDateTime(QDate(2015,02,02),QTime(1,45)));
+    item21->setFinish(UtcDateTime(QDate(2015,02,02),QTime(2,0)));
     item21->setColor(Qt::red);
     item21->setTitle("leaf21");
 
-    item31->setStart(UtcDateTime(QDate(2015,01,31),QTime(10,0)));
-    item31->setFinish(UtcDateTime(QDate(2015,02,02),QTime(5,0)));
+    item31->setStart(UtcDateTime(QDate(2015,02,02),QTime(3,0)));
+    item31->setFinish(UtcDateTime(QDate(2015,02,02),QTime(4,0)));
     item31->setColor(Qt::green);
     item31->setTitle("leaf31");
 
-    item32->setStart(UtcDateTime(QDate(2015,02,02),QTime(10,0)));
-    item32->setFinish(UtcDateTime(QDate(2015,02,02),QTime(20,0)));
+    item32->setStart(UtcDateTime(QDate(2015,02,02),QTime(4,30)));
+    item32->setFinish(UtcDateTime(QDate(2015,02,02),QTime(5,0)));
     item32->setColor(Qt::green);
     item32->setTitle("leaf32");
-
 
     test1->append(item11);
     test1->append(item12);
@@ -108,14 +132,37 @@ void GanttWidget::addItems(const QList<GanttInfoItem *> &items)
     m_scene->addItems(items);
 }
 
+UtcDateTime GanttWidget::slidersDt() const
+{
+    if(!m_scene)
+        return UtcDateTime();
+    return m_scene->slidersDt();
+}
+
 void GanttWidget::on_comboBox_mode_currentIndexChanged(int index)
 {
-    if(index>GanttHeader::GanttPrecisionMode_count)
+    GanttHeader::GanttPrecisionMode newMode;
+
+    switch(index)
     {
-        qDebug() << "index>GanttHeader::GanttPrecisionMode_count";
+    case 0:
+        newMode = GanttHeader::months1;
+        break;
+    case 1:
+        newMode = GanttHeader::days1;
+        break;
+    case 2:
+        newMode = GanttHeader::hours1;
+        break;
+    case 3:
+        newMode = GanttHeader::minutes1;
+        break;
+    case 4:
+        newMode = GanttHeader::seconds1;
+        break;
+    default:
         return;
     }
-    GanttHeader::GanttPrecisionMode newMode = static_cast<GanttHeader::GanttPrecisionMode>(index);
 
     m_scene->setMode(newMode);
 
@@ -141,6 +188,7 @@ void GanttWidget::collapsed(const QModelIndex &index)
 void GanttWidget::onScrollGraphicsView(int value)
 {
     m_scene->updateHeaderPos(value);
+    m_scene->updateSliderRect();
 }
 
 void GanttWidget::updatePos(GanttInfoNode *from)
@@ -187,4 +235,26 @@ void GanttWidget::updatePosHelper(GanttInfoItem *item)
 void GanttWidget::onResize()
 {
 
+}
+
+
+
+
+
+void GanttWidget::on_pushButton_slider_clicked()
+{
+
+}
+
+void GanttWidget::on_pushButton_header_clicked()
+{
+    if(m_scene->headerMode() == GanttHeader::TimelineMode)
+        m_scene->setHeaderMode(GanttHeader::GanttDiagramMode);
+    else
+        m_scene->setHeaderMode(GanttHeader::TimelineMode);
+}
+
+void GanttWidget::repaintDtHeader()
+{
+    ui->treeView->repaintHeader();
 }

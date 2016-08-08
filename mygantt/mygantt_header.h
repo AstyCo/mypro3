@@ -18,13 +18,35 @@ class GanttInfoNode;
 class GanttHeader : public QGraphicsItem
 {
 public:
+    enum GanttHeaderMode
+    {
+        GanttDiagramMode,
+        TimelineMode,
+
+        GanttHeaderMode_count
+    };
+
     enum GanttPrecisionMode
     {
-        showMonths,
-        showDays,
-        showHours,
-        showMinutes,
-        showSeconds,
+        months1,
+        days1,
+        hours1,
+
+        minutes30,
+        minutes15,
+        minutes1,
+
+        seconds30,
+        seconds15,
+        seconds1,
+
+        miliseconds30,
+        miliseconds15,
+        miliseconds1,
+
+        microseconds30,
+        microseconds15,
+        microseconds1,
 
         GanttPrecisionMode_count
     };
@@ -61,23 +83,47 @@ public:
 
     qreal dtToX(const UtcDateTime& dt) const;
 
+    void setHeaderMode(const GanttHeaderMode &headerMode);
+    void init();
+    GanttHeaderMode headerMode() const;
+
+    void calculateTimeMode();
+
+    void setCurrentWidth(int currentWidth);
+
+    void setLengthInMicroseconds(long long lengthInMicroseconds);
+
+    const UtcDateTime &startDt() const;
+    const UtcDateTime &finishDt() const;
+
+    static long long modeToMicrosecond(GanttPrecisionMode mode);
+
 private:
 
     bool onItemsAdditionHelper(GanttInfoItem* item);
+    QString textForDtStep(int step) const;
 
 
 private:
-    UtcDateTime   m_minDt,
-                  m_maxDt;
 
+    GanttHeaderMode m_headerMode;
+    // Gantt mode
     UtcDateTime   m_startDt,
                   m_finishDt;
+    QList<QGraphicsRectItemWithText*> m_items;
+    // line mode
+    qreal m_stretchFactor;
+    int m_currentWidth;
+
+    // COMMON
+
+    UtcDateTime   m_minDt,
+                  m_maxDt;
 
     long long m_lengthInMicroseconds;
 
     GanttPrecisionMode m_mode;
 
-    QList<QGraphicsRectItemWithText*> m_items;
     GanttScene * m_scene;
 
     bool m_isEmpty;
