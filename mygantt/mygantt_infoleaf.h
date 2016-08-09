@@ -9,28 +9,34 @@
 
 class GanttInfoLeaf : public GanttInfoItem
 {
+    Q_OBJECT
+
 public:
     GanttInfoLeaf();
 
     UtcDateTime start() const;
-    void setStart(const UtcDateTime &start);
-
     UtcDateTime finish() const;
-    void setFinish(const UtcDateTime &finish);
-
     QColor getColor() const;
-    void setColor(const QColor &value);
 
     long long duration() const; // in microsec
 
     int columnCount() const;
-
     qreal height() const;
+
+signals:
+    void startChanged();
+    void finishChanged();
+    void colorChanged();
+
+public slots:
+    void setStart(const UtcDateTime &start);
+    void setFinish(const UtcDateTime &finish);
+    void setColor(const QColor &value);
 
 private:
     UtcDateTime m_start,
             m_finish;
-    QColor color;
+    QColor m_color;
 
 };
 

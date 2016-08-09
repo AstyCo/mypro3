@@ -19,6 +19,12 @@ GanttWidget::GanttWidget(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    if(layout())
+    {
+        layout()->setMargin(2);
+        layout()->setSpacing(0);
+    }
+
     ui->treeView->setContentsMargins(0,0,0,0);
     ui->treeView->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     ui->treeView->verticalScrollBar()->setStyleSheet("QScrollBar {width:0px;}");
@@ -132,6 +138,8 @@ void GanttWidget::addItems(const QList<GanttInfoItem *> &items)
     m_model->addItems(items);
     m_scene->addItems(items);
 }
+
+
 
 UtcDateTime GanttWidget::slidersDt() const
 {

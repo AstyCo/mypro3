@@ -175,11 +175,12 @@ void GanttScene::setHeaderMode(GanttHeader::GanttHeaderMode mode)
         else if(mode == GanttHeader::GanttDiagramMode)
         {
             updateItems();
-
         }
         if(!views().isEmpty())
+        {
             onViewAdded(views()[0]);
-
+            views()[0]->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        }
     }
 }
 
@@ -226,17 +227,17 @@ void GanttScene::addItemsHelper(GanttInfoItem *item)
     GanttInfoLeaf *leaf = dynamic_cast<GanttInfoLeaf*>(item);
     if(leaf)
     {
-        GanttItem *p_item = new GanttItem(leaf);
+        GanttItem *p_item = new GanttItem(leaf,m_header);
 
-
-        qreal startPos = m_header->dtToX(leaf->start()),
-              itemWidth = m_header->dtToX(leaf->finish()) - startPos;
+        p_item->setScene(this);
 
         m_items.append(p_item);
         m_itemByInfo.insert(leaf,p_item);
-        p_item->setScene(this);
-        p_item->setBoundingRectSize(QSizeF(itemWidth, DEFAULT_ITEM_WIDTH));
-        p_item->setPos(startPos, 2*DEFAULT_ITEM_WIDTH + leaf->pos());
+
+        p_item->updateGeometry();
+
+        connect(leaf,SIGNAL(changed()),this,SLOT(onInfoChanged()));
+
     }
     else
     {
@@ -268,6 +269,17 @@ void GanttScene::updateItems()
 
 
     update();
+}
+
+void GanttScene::onInfoChanged()
+{
+    GanttInfoLeaf * leaf = dynamic_cast<GanttInfoLeaf*>(sender());
+    if(!leaf)
+        return;
+
+    bool newRange = false;
+    if(m_header->verifyBoundsByLeaf(leaf))
+        m_header->updateHeader();
 }
 
 GanttSlider *GanttScene::slider() const

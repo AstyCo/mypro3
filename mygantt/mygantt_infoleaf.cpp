@@ -5,7 +5,12 @@
 
 GanttInfoLeaf::GanttInfoLeaf()
 {
+    m_start = m_finish = UtcDateTime();
 
+
+    connect(this,SIGNAL(startChanged()),this,SIGNAL(changed()));
+    connect(this,SIGNAL(finishChanged()),this,SIGNAL(changed()));
+    connect(this,SIGNAL(colorChanged()),this,SIGNAL(changed()));
 }
 
 
@@ -16,7 +21,11 @@ UtcDateTime GanttInfoLeaf::start() const
 
 void GanttInfoLeaf::setStart(const UtcDateTime &start)
 {
+    if(start == m_start)
+        return;
+
     m_start = start;
+    emit startChanged();
 }
 UtcDateTime GanttInfoLeaf::finish() const
 {
@@ -25,16 +34,24 @@ UtcDateTime GanttInfoLeaf::finish() const
 
 void GanttInfoLeaf::setFinish(const UtcDateTime &finish)
 {
+    if(finish == m_finish)
+        return;
+
     m_finish = finish;
+    emit finishChanged();
 }
 QColor GanttInfoLeaf::getColor() const
 {
-    return color;
+    return m_color;
 }
 
 void GanttInfoLeaf::setColor(const QColor &value)
 {
-    color = value;
+    if(value == m_color)
+        return;
+
+    m_color = value;
+    emit colorChanged();
 }
 
 long long GanttInfoLeaf::duration() const

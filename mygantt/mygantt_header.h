@@ -98,6 +98,10 @@ public:
 
     void setRange(UtcDateTime min, UtcDateTime max);
 
+    bool verifyBoundsByLeaf(const GanttInfoLeaf* leaf);
+
+
+
     static long long modeToMicrosecond(GanttPrecisionMode mode);
 
 private:

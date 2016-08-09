@@ -6,8 +6,10 @@
 
 class GanttInfoNode;
 
-class GanttInfoItem
+class GanttInfoItem : public QObject
 {
+    Q_OBJECT
+
 public:
     GanttInfoItem(GanttInfoNode *parent = NULL);
 
@@ -16,17 +18,25 @@ public:
     virtual int columnCount() const = 0;
 
     QString title() const;
-    void setTitle(const QString &title);
 
     int row() const;
-
-    void setParent(GanttInfoNode *parent);
 
     virtual qreal height() const = 0;
     virtual qreal pos() const;
 
     QModelIndex index() const;
+
+signals:
+    void parentChanged();
+    void indexChanged();
+    void titleChanged();
+
+    void changed();
+
+public slots:
+    void setTitle(const QString &title);
     void setIndex(const QModelIndex &index);
+    void setParent(GanttInfoNode *parent);
 
 protected:
     virtual int indexOf(const GanttInfoItem* p_item) const;

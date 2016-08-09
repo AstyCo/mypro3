@@ -3,12 +3,16 @@
 
 #include "mygantt_infoleaf.h"
 
-#include <QGraphicsItem>
 
+#include <QGraphicsObject>
+
+class GanttHeader;
 class GanttScene;
 
-class GanttItem : public QGraphicsItem
+class GanttItem : public QGraphicsObject
 {
+    Q_OBJECT
+
 public:
     GanttItem(GanttInfoLeaf *info,QGraphicsItem *parent = 0);
 
@@ -16,18 +20,24 @@ public:
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
-    void setScene(GanttScene *scene);
-    void setBoundingRectSize(const QSizeF &boundingRectSize);
+
 
     GanttInfoLeaf *info() const;
 
     QRectF rect() const;
+
+public slots:
+    void setScene(GanttScene *scene);
+    void setBoundingRectSize(const QSizeF &boundingRectSize);
+
+    void updateGeometry();
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
 
 private:
 
+    GanttHeader* m_header;
     GanttInfoLeaf* m_info;
     GanttScene *m_scene;
 

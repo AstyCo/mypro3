@@ -23,10 +23,15 @@ public:
 
     void changeExpanding(const QModelIndex& index);
 
+    void setHSliderHeight(int hSliderHeight);
+
 protected:
     void resizeEvent(QResizeEvent *event);
 
     void scrollContentsBy(int dx, int dy);
+
+    void mouseMoveEvent(QMouseEvent *event);
+    void leaveEvent(QEvent *);
 
 private:
     void initialize();
@@ -34,6 +39,8 @@ private:
 private:
     GanttScene *m_scene;
     GanttTreeView *m_treeView;
+
+    int m_hSliderHeight;
 
     friend class GanttTreeView;
 

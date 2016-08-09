@@ -1,16 +1,20 @@
 #include "mygantt_item.h"
 #include "mygantt_scene.h"
 
+#include "mygantt_header.h"
 #include "mygantt_infonode.h"
 
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 
 GanttItem::GanttItem(GanttInfoLeaf *info,QGraphicsItem *parent) :
-    QGraphicsItem(parent)
+    QGraphicsObject(parent)
 {
     m_scene = NULL;
+    m_header = dynamic_cast<GanttHeader*>(parent);
+
     m_info = info;
+    connect(m_info, SIGNAL(changed()),this,SLOT(updateGeometry()));
 }
 
 QRectF GanttItem::boundingRect() const
@@ -38,6 +42,18 @@ void GanttItem::setBoundingRectSize(const QSizeF &boundingRectSize)
 {
     prepareGeometryChange();
     m_boundingRectSize = boundingRectSize;
+}
+
+void GanttItem::updateGeometry()
+{
+    if(!m_header)
+        return;
+
+    qreal startPos = m_header->dtToX(m_info->start()),
+          itemWidth = m_header->dtToX(m_info->finish()) - startPos;
+
+    setBoundingRectSize(QSizeF(itemWidth, DEFAULT_ITEM_WIDTH));
+    setPos(startPos, 2*DEFAULT_ITEM_WIDTH + m_info->pos());
 }
 GanttInfoLeaf *GanttItem::info() const
 {

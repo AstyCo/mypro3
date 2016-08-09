@@ -14,7 +14,7 @@ class GanttTreeModel : public QAbstractItemModel
 public:
     enum Field
     {
-        nameField,
+        titleField,
         startField,
         finishField,
         durationField,
@@ -36,6 +36,9 @@ public:
     QModelIndex parent(const QModelIndex &index) const;
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
+
+    bool setData(const QModelIndex &index, const QVariant &value,
+                 int role = Qt::EditRole);
 
     void addItems(const QList<GanttInfoItem*>& items);
     void addItems(GanttInfoItem* item);

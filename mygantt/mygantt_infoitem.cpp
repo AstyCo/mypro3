@@ -6,6 +6,10 @@
 GanttInfoItem::GanttInfoItem(GanttInfoNode *parent)
 {
     m_parent = parent;
+
+    connect(this,SIGNAL(indexChanged()),this,SIGNAL(changed()));
+    connect(this,SIGNAL(titleChanged()),this,SIGNAL(changed()));
+    connect(this,SIGNAL(parentChanged()),this,SIGNAL(changed()));
 }
 
 QString GanttInfoItem::title() const
@@ -15,7 +19,10 @@ QString GanttInfoItem::title() const
 
 void GanttInfoItem::setTitle(const QString &title)
 {
+    if(title == m_title)
+        return;
     m_title = title;
+    emit titleChanged();
 }
 
 int GanttInfoItem::row() const
@@ -39,12 +46,20 @@ QModelIndex GanttInfoItem::index() const
 
 void GanttInfoItem::setIndex(const QModelIndex &index)
 {
+    if(index == m_index)
+        return;
+
     m_index = index;
+    emit indexChanged();
 }
 
 void GanttInfoItem::setParent(GanttInfoNode *parent)
 {
+    if(parent == m_parent)
+        return;
+
     m_parent = parent;
+    emit parentChanged();
 }
 
 qreal GanttInfoItem::pos() const

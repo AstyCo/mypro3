@@ -83,6 +83,8 @@ void GanttHeader::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
             if(!(step%(LITTLE_HATCH_COUNT+1)))
             {
                 painter->drawLine(QPointF(curOffset,DEFAULT_ITEM_HEIGHT),QPointF(curOffset,DEFAULT_ITEM_HEIGHT*(3.0/2))); // big hatch
+                QFont dtFont("Goudy Old Style", 8);
+                painter->setFont(dtFont);
                 painter->drawText(QRectF(-MIN_WIDTH_FOR_TIME_VISUALIZING/2 + curOffset, DEFAULT_ITEM_HEIGHT*(3.0/2),
                                          MIN_WIDTH_FOR_TIME_VISUALIZING,DEFAULT_ITEM_HEIGHT/2),textForDtStep(step),QTextOption(Qt::AlignCenter));
             }
@@ -203,6 +205,22 @@ void GanttHeader::onItemsAddition(GanttInfoItem* items)
 
 void GanttHeader::initRange()
 {
+    static UtcDateTime lastMinDt = UtcDateTime(),
+                        lastMaxDt = UtcDateTime();
+    static GanttPrecisionMode lastMode = GanttPrecisionMode_count;
+
+    if(lastMinDt != m_minDt
+            || lastMaxDt != m_maxDt
+            || lastMode != m_mode )
+    {
+        lastMinDt = m_minDt;
+        lastMaxDt = m_maxDt;
+        lastMode = m_mode;
+    }
+    else
+        return;
+
+
     if(m_headerMode == GanttDiagramMode)
     {
         switch(m_mode)
@@ -473,16 +491,7 @@ bool GanttHeader::onItemsAdditionHelper(GanttInfoItem *item)
             m_maxDt = leaf->finish();
         }
 
-        if(m_maxDt<leaf->finish())
-        {
-            m_maxDt = leaf->finish();
-            newRange = true;
-        }
-        if(m_minDt>leaf->start())
-        {
-            m_minDt=leaf->start();
-            newRange = true;
-        }
+        newRange |= verifyBoundsByLeaf(leaf);
     }
     else
     {
@@ -569,6 +578,27 @@ void GanttHeader::setRange(UtcDateTime min, UtcDateTime max)
     m_maxDt = max;
 
     updateHeader();
+}
+
+bool GanttHeader::verifyBoundsByLeaf(const GanttInfoLeaf *leaf)
+{
+    if(!leaf)
+        return false;
+
+    bool newRange = false;
+    if(m_minDt > leaf->start())
+    {
+        m_minDt = leaf->start();
+        newRange = true;
+    }
+
+    if(m_maxDt < leaf->finish())
+    {
+        m_maxDt = leaf->finish();
+        newRange = true;
+    }
+
+    return newRange;
 }
 
 long long GanttHeader::modeToMicrosecond(GanttPrecisionMode mode)

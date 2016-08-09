@@ -39,12 +39,12 @@ QVariant GanttTreeModel::data(const QModelIndex &index, int role) const
     {
         switch (index.column())
         {
-        case nameField:
+        case titleField:
             return leaf->title();
         case startField:
-            return leaf->start().toString();
+            return leaf->start().dateTime();
         case finishField:
-            return leaf->finish().toString();
+            return leaf->finish().dateTime();
         case durationField:
             return leaf->duration();
         default:
@@ -62,7 +62,7 @@ QVariant GanttTreeModel::data(const QModelIndex &index, int role) const
     {
         switch (index.column())
         {
-        case nameField:
+        case titleField:
             return node->title();
         case startField:
         case finishField:
@@ -80,7 +80,7 @@ Qt::ItemFlags GanttTreeModel::flags(const QModelIndex &index) const
     if (!index.isValid())
         return 0;
 
-    return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+    return Qt::ItemIsEditable | Qt::ItemIsEnabled /*| Qt::ItemIsSelectable*/;
 }
 
 QVariant GanttTreeModel::headerData(int section, Qt::Orientation orientation,
@@ -237,6 +237,49 @@ int GanttTreeModel::columnCount(const QModelIndex &parent) const
 //    return parentNode->columnCount();
 
     return 4;
+}
+
+bool GanttTreeModel::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+    qDebug() << "GanttTreeModel::setData";
+    if (!index.isValid() || index.column() == durationField )
+        return false;
+
+    qDebug() << "GanttTreeModel::setData";
+
+    GanttInfoItem *info = itemForIndex(index);
+    GanttInfoLeaf *leaf = qobject_cast<GanttInfoLeaf*>(info);
+
+    if (info)
+    {
+        if (role == Qt::EditRole)
+        {
+            if (index.column() == titleField)
+                info->setTitle(value.toString());
+            else if (index.column() == startField && leaf)
+            {
+                UtcDateTime time = UtcDateTime(value.toDateTime());
+
+                if(time >= leaf->finish())
+                    return false;
+                leaf->setStart(time);
+            }
+            else if (index.column() == finishField && leaf)
+            {
+                UtcDateTime time = UtcDateTime(value.toDateTime());
+                if(leaf->start() >= time)
+                    return false;
+
+                leaf->setFinish(time);
+            }
+        }
+//        else if (role == Qt::CheckStateRole)
+//            info->setDone(value.toBool());
+        else
+            return false;
+        return true;
+    }
+    return false;
 }
 
 void GanttTreeModel::addItems(const QList<GanttInfoItem *> &items)

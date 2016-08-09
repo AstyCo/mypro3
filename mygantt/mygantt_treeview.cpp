@@ -3,6 +3,7 @@
 
 #include "mygantt_globalvalues.h"
 #include "mygantt_graphicsview.h"
+#include "mygantt_treedelegate.h"
 
 
 #include <QScrollBar>
@@ -14,12 +15,20 @@ GanttTreeView::GanttTreeView(QWidget * parent )
 {
     setHeader(new GanttHeaderView(Qt::Horizontal,this));
     setMinimumWidth(GANTTTREEVIEW_MIN_WIDTH);
-    m_hSliderHeight = 15;
-//    setHeaderHidden(true);
     horizontalScrollBar()->setStyleSheet(
                 QString("QScrollBar {height:%1px;}").arg(m_hSliderHeight));
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setMouseTracking(true);
+
+    setSelectionBehavior(QAbstractItemView::SelectItems);
+    setSelectionMode(QAbstractItemView::NoSelection);
+    setFrameStyle(0);
+    m_hSliderHeight = 15;
+
+
+    setItemDelegateForColumn(1, new GanttTreeDelegate(this));
+    setItemDelegateForColumn(2, new GanttTreeDelegate(this));
+
 }
 
 void GanttTreeView::scrollContentsBy(int dx, int dy)

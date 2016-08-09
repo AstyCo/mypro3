@@ -15,7 +15,7 @@ class QModelIndex;
 
 class GanttScene : public QGraphicsScene
 {
-
+    Q_OBJECT
 
 public:
     GanttScene(QObject * parent = 0);
@@ -62,6 +62,8 @@ private:
     void addItemsHelper(GanttInfoItem* item);
     void updateItems();
 
+private slots:
+    void onInfoChanged();
 
 private:
 
