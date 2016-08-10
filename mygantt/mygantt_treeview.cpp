@@ -13,6 +13,8 @@
 
 GanttTreeView::GanttTreeView(QWidget * parent )
 {
+    m_graphicsView = NULL;
+
     setHeader(new GanttHeaderView(Qt::Horizontal,this));
     setMinimumWidth(GANTTTREEVIEW_MIN_WIDTH);
     horizontalScrollBar()->setStyleSheet(

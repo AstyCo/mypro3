@@ -14,6 +14,7 @@ class GanttScene;
 class GanttInfoItem;
 class GanttInfoLeaf;
 class GanttInfoNode;
+class GanttWidget;
 
 class GanttHeader : public QGraphicsItem
 {
@@ -30,23 +31,28 @@ public:
     {
         months1,
         days1,
+
+        hours12,
+        hours6,
         hours1,
 
         minutes30,
         minutes15,
+        minutes5,
         minutes1,
 
         seconds30,
         seconds15,
+        seconds5,
         seconds1,
 
-        miliseconds30,
-        miliseconds15,
-        miliseconds1,
+//        miliseconds30,
+//        miliseconds15,
+//        miliseconds1,
 
-        microseconds30,
-        microseconds15,
-        microseconds1,
+//        microseconds30,
+//        microseconds15,
+//        microseconds1,
 
         GanttPrecisionMode_count
     };
@@ -58,7 +64,6 @@ public:
     void setScene(QGraphicsScene* scene);
 
     QRectF boundingRect() const;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
     void updateHeader();
 
@@ -67,8 +72,6 @@ public:
 
     void onItemsAddition(const QList<GanttInfoItem*>& items);
     void onItemsAddition(GanttInfoItem* items);
-
-    void initRange();
 
     static QString topHeaderFormat(GanttPrecisionMode mode);
     static QString secondHeaderFormat(GanttPrecisionMode mode);
@@ -87,8 +90,6 @@ public:
     void init();
     GanttHeaderMode headerMode() const;
 
-    void calculateTimeMode();
-
     void setCurrentWidth(int currentWidth);
 
     void setLengthInMicroseconds(long long lengthInMicroseconds);
@@ -101,13 +102,23 @@ public:
     bool verifyBoundsByLeaf(const GanttInfoLeaf* leaf);
 
 
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    void calculateTimeMode();
+    void initRange();
 
-    static long long modeToMicrosecond(GanttPrecisionMode mode);
+    static long long modeToMicrosecond(GanttPrecisionMode mode, const QDate& date = QDate());
+    static long long modeToSecond(GanttPrecisionMode mode, const QDate& date = QDate());
+    static int modeToSegmentCount(GanttPrecisionMode mode, const QDate& date = QDate());
+    static bool isDrawn(const UtcDateTime& dt, GanttPrecisionMode mode);
+    static QString formatForMode(GanttPrecisionMode mode);
+
 
 private:
 
     bool onItemsAdditionHelper(GanttInfoItem* item);
-    QString textForDtStep(int step) const;
+    QString textForDtStep(int step_segment) const;
+
+    void updateWidget();
 
 
 private:
@@ -131,6 +142,7 @@ private:
     GanttPrecisionMode m_mode;
 
     GanttScene * m_scene;
+    GanttWidget *m_widget;
 
     bool m_isEmpty;
 

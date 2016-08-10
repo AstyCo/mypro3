@@ -14,7 +14,6 @@ protected:
     void paintEvent(QPaintEvent *e);
 
 private:
-    GanttTreeView *m_view;
 
 };
 

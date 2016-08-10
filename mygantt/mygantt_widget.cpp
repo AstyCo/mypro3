@@ -12,6 +12,7 @@
 
 #include <QScrollBar>
 
+QList<GanttInfoItem*> generateTest();
 
 GanttWidget::GanttWidget(QWidget *parent) :
     QWidget(parent),
@@ -33,8 +34,6 @@ GanttWidget::GanttWidget(QWidget *parent) :
     ui->treeView->setGraphicsView(ui->ganttView);
     ui->ganttView->setTreeView(ui->treeView);
 
-    connect(ui->ganttView->verticalScrollBar(),SIGNAL(valueChanged(int)),this,SLOT(onScrollGraphicsView(int)));
-
     m_scene = new GanttScene(this);
     m_model = new GanttTreeModel(NULL,this);
 
@@ -45,13 +44,18 @@ GanttWidget::GanttWidget(QWidget *parent) :
     connect(ui->treeView,SIGNAL(collapsed(QModelIndex)), this,SLOT(collapsed(QModelIndex)));
     connect(m_scene->slider(),SIGNAL(sliderPosChanged(qreal)),this,SLOT(repaintDtHeader()));
 
-    GanttInfoNode *test1 = new GanttInfoNode
-            ,*test3 = new GanttInfoNode;
-    GanttInfoLeaf *item11 = new GanttInfoLeaf
-            ,*item12 = new GanttInfoLeaf
-            ,*item21 = new GanttInfoLeaf
-            ,*item31 = new GanttInfoLeaf
-            ,*item32 = new GanttInfoLeaf;
+    connect(ui->intervalSlider,SIGNAL(beginMoved(long)),this, SLOT(onSliderMoved()));
+    connect(ui->intervalSlider,SIGNAL(endMoved(long)),this, SLOT(onSliderMoved()));
+
+
+
+//    GanttInfoNode *test1 = new GanttInfoNode
+//            ,*test3 = new GanttInfoNode;
+//    GanttInfoLeaf *item11 = new GanttInfoLeaf
+//            ,*item12 = new GanttInfoLeaf
+//            ,*item21 = new GanttInfoLeaf
+//            ,*item31 = new GanttInfoLeaf
+//            ,*item32 = new GanttInfoLeaf;
 
 //    item11->setStart(UtcDateTime(QDate(2015,01,29)));
 //    item11->setFinish(UtcDateTime(QDate(2015,01,29),QTime(5,0)));
@@ -77,46 +81,51 @@ GanttWidget::GanttWidget(QWidget *parent) :
 //    item32->setFinish(UtcDateTime(QDate(2015,02,02),QTime(20,0)));
 //    item32->setColor(Qt::green);
 //    item32->setTitle("leaf32");
-    item11->setStart(UtcDateTime(QDate(2015,02,02)));
-    item11->setFinish(UtcDateTime(QDate(2015,02,02),QTime(1,30)));
-    item11->setColor(Qt::yellow);
-    item11->setTitle("leaf11");
 
-    item12->setStart(UtcDateTime(QDate(2015,02,02),QTime(1,30,30)));
-    item12->setFinish(UtcDateTime(QDate(2015,02,02),QTime(1,32)));
-    item12->setColor(Qt::yellow);
-    item12->setTitle("leaf12");
+    QList<GanttInfoItem*> testList = generateTest();
 
-    item21->setStart(UtcDateTime(QDate(2015,02,02),QTime(1,45)));
-    item21->setFinish(UtcDateTime(QDate(2015,02,02),QTime(2,0)));
-    item21->setColor(Qt::red);
-    item21->setTitle("leaf21");
 
-    item31->setStart(UtcDateTime(QDate(2015,02,02),QTime(3,0)));
-    item31->setFinish(UtcDateTime(QDate(2015,02,02),QTime(4,0)));
-    item31->setColor(Qt::green);
-    item31->setTitle("leaf31");
 
-    item32->setStart(UtcDateTime(QDate(2015,02,02),QTime(4,30)));
-    item32->setFinish(UtcDateTime(QDate(2015,02,02),QTime(5,0)));
-    item32->setColor(Qt::green);
-    item32->setTitle("leaf32");
+//    item11->setStart(UtcDateTime(QDate(2015,02,02)));
+//    item11->setFinish(UtcDateTime(QDate(2015,02,02),QTime(1,30)));
+//    item11->setColor(Qt::yellow);
+//    item11->setTitle("leaf11");
 
-    test1->append(item11);
-    test1->append(item12);
-    test1->setTitle("node1");
+//    item12->setStart(UtcDateTime(QDate(2015,02,02),QTime(1,30,30)));
+//    item12->setFinish(UtcDateTime(QDate(2015,02,02),QTime(1,32)));
+//    item12->setColor(Qt::yellow);
+//    item12->setTitle("leaf12");
 
-//    test2->append(item21);
-    test3->append(item31);
-    test3->append(item32);
-    test3->setTitle("node2");
+//    item21->setStart(UtcDateTime(QDate(2015,02,02),QTime(1,45)));
+//    item21->setFinish(UtcDateTime(QDate(2015,02,02),QTime(2,0)));
+//    item21->setColor(Qt::red);
+//    item21->setTitle("leaf21");
 
-    QList<GanttInfoItem*> testL;
-    testL.append(test1);
-    testL.append(item21);
-    testL.append(test3);
+//    item31->setStart(UtcDateTime(QDate(2015,02,02),QTime(3,0)));
+//    item31->setFinish(UtcDateTime(QDate(2015,02,02),QTime(4,0)));
+//    item31->setColor(Qt::green);
+//    item31->setTitle("leaf31");
 
-    addItems(testL);
+//    item32->setStart(UtcDateTime(QDate(2015,02,02),QTime(4,30)));
+//    item32->setFinish(UtcDateTime(QDate(2015,02,02),QTime(5,0)));
+//    item32->setColor(Qt::green);
+//    item32->setTitle("leaf32");
+
+//    test1->append(item11);
+//    test1->append(item12);
+//    test1->setTitle("node1");
+
+////    test2->append(item21);
+//    test3->append(item31);
+//    test3->append(item32);
+//    test3->setTitle("node2");
+
+//    QList<GanttInfoItem*> testL;
+//    testL.append(test1);
+//    testL.append(item21);
+//    testL.append(test3);
+
+    addItems(testList);
 
 }
 
@@ -194,10 +203,14 @@ void GanttWidget::collapsed(const QModelIndex &index)
     return updatePos(node);
 }
 
-void GanttWidget::onScrollGraphicsView(int value)
+
+void GanttWidget::onSliderMoved()
 {
-    m_scene->updateHeaderPos(value);
-    m_scene->updateSliderRect();
+    if(!m_scene || !m_scene->m_header)
+        return;
+
+    m_scene->setRange(m_minDt.addMicroseconds(ui->intervalSlider->begin() * m_minDt.microsecondsTo(m_maxDt))
+                      , m_minDt.addMicroseconds(ui->intervalSlider->end() * m_minDt.microsecondsTo(m_maxDt)));
 }
 
 void GanttWidget::updatePos(GanttInfoNode *from)
@@ -269,4 +282,60 @@ void GanttWidget::on_pushButton_header_clicked()
 void GanttWidget::repaintDtHeader()
 {
     ui->treeView->repaintHeader();
+}
+
+void GanttWidget::updateRange()
+{
+    if(!m_scene || !m_scene->m_header)
+        return;
+
+    m_minDt = m_scene->m_header->m_minDt;
+    m_maxDt = m_scene->m_header->m_maxDt;
+
+    m_scene->update();
+}
+
+QList<GanttInfoItem*> generateTest()
+{
+    QList<GanttInfoItem*> testList;
+    for(int i = 0; i<1000; ++i)
+    {
+        GanttInfoNode *node = new GanttInfoNode;
+
+        node->setTitle("node"+QString::number(i));
+
+        QColor color = QColor::fromRgb(qrand()%255,qrand()%255,qrand()%255);
+        int max = qrand()%4;
+
+        for(int j = 0; j<max; ++j)
+        {
+            GanttInfoLeaf *leaf = new GanttInfoLeaf;
+
+            int year = 2016,
+                    month = 1 + qrand()%6,
+                    day = 1 + qrand()%28,
+                    hour = qrand()%2,
+                    minute = qrand()%60,
+                    sec = qrand()%60,
+                    microsec = qrand()%1000000;
+
+            UtcDateTime start(year,month,day,hour,minute,sec,microsec),
+                    finish = start
+                        .addMicroseconds(((long long)qrand()%SECONDS_IN_DAY)*1000000)
+                        .addDays(qrand()%28)
+                        .addMonths(qrand()%12);
+
+            leaf->setStart(start);
+            leaf->setFinish(finish);
+            leaf->setColor(color);
+            leaf->setTitle("leaf"+QString::number(1 + i) + ':' + QString::number(1 + j));
+
+            node->append(leaf);
+        }
+
+
+        testList.append(node);
+    }
+
+    return testList;
 }

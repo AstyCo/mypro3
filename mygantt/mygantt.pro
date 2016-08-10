@@ -24,9 +24,9 @@ unix {
 LIBS += -L$${DEP_PATH_LIBS}
 
 CONFIG(release, debug|release) {
-  LIBS += -lextensions
+  LIBS += -lextensions -lganttmodel
 } else:CONFIG(debug, debug|release) {
-  LIBS += -lextensionsd
+  LIBS += -lextensionsd -lganttmodeld
   unix {
 
   } else:win32 {
@@ -36,6 +36,8 @@ CONFIG(release, debug|release) {
 
 
 INCLUDEPATH += "$${DEP_PATH_HEADERS}/extensions"
+INCLUDEPATH += "$${DEP_PATH_HEADERS}/ganttmodel"
+
 
 
 SOURCES += main.cpp\

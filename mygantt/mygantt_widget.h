@@ -16,6 +16,7 @@ class GanttWidget;
 
 class GanttScene;
 class GanttTreeModel;
+class GanttHeader;
 
 class GanttWidget : public QWidget
 {
@@ -37,7 +38,9 @@ private slots:
     void expanded(const QModelIndex& index);
     void collapsed(const QModelIndex& index);
 
-    void onScrollGraphicsView(int value);
+
+
+    void onSliderMoved();
 
 
     void on_pushButton_slider_clicked();
@@ -46,6 +49,8 @@ private slots:
 
 public slots:
     void repaintDtHeader();
+
+    void updateRange();
 
 private:
     void updatePos(GanttInfoNode* from);
@@ -59,8 +64,11 @@ private:
 
     qreal m_curSceneMax;
 
+    UtcDateTime m_minDt, m_maxDt;
+
     friend class GanttScene;
     friend class MyGanttView;
+    friend class GanttHeader;
 };
 
 #endif // GANTTWIDGET_H

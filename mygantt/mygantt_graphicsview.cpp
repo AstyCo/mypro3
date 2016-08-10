@@ -35,16 +35,21 @@ void GanttGraphicsView::scrollContentsBy(int dx, int dy)
 {
     QGraphicsView::scrollContentsBy(dx,dy);
 
+    if(!m_scene)
+        return;
+
     if(dx)
         m_scene->invalidate(QRectF(),QGraphicsScene::BackgroundLayer);
+
+    int vs = verticalScrollBar()->value();
+
+    m_scene->updateHeaderPos(vs);
 
     if(!m_treeView)
         return;
 
-    int vs = verticalScrollBar()->value();
     m_treeView->verticalScrollBar()->setValue(vs);
-    QList<QRectF> rects;
-    rects.append(m_treeView->viewport()->rect());
+
     m_treeView->update();
 
 
@@ -83,6 +88,9 @@ void GanttGraphicsView::initialize()
 {
 //    setRenderHint(QPainter::Antialiasing,true);
 //    setRenderHint(QPainter::TextAntialiasing,false);
+
+    m_scene = NULL;
+    m_treeView = NULL;
 
     setFrameStyle(0);
     setAlignment(Qt::AlignLeft | Qt::AlignTop);

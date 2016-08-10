@@ -17,7 +17,6 @@
 GanttHeaderView::GanttHeaderView(Qt::Orientation orientation, QWidget * parent) :
     QHeaderView(orientation,parent)
 {
-    m_view = dynamic_cast<GanttTreeView*>(parent);
 }
 
 void GanttHeaderView::paintEvent(QPaintEvent *e)
@@ -56,7 +55,7 @@ void GanttHeaderView::paintEvent(QPaintEvent *e)
     painter.setPen(headerPen);
 
     painter.setFont(dtFont);
-    painter.drawText(dtRect,p_parentWidget->slidersDt().toString(),QTextOption(Qt::AlignCenter));
+    painter.drawText(dtRect,p_parentWidget->slidersDt().toString("dd.MM.yyyy HH:mm:ss"),QTextOption(Qt::AlignCenter));
 
     painter.drawRect(utcRect);  
     painter.setFont(utcFont);

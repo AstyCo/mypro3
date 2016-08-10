@@ -17,7 +17,6 @@ public:
 
     void updateEditorGeometry(QWidget *editor,
         const QStyleOptionViewItem &option, const QModelIndex &index) const;
-    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
 };
 

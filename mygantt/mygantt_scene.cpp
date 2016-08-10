@@ -43,14 +43,6 @@ void GanttScene::updateWidth(int w)
 
     if(m_header->headerMode() == GanttHeader::TimelineMode)
         return;
-
-    GanttGraphicsView* p_view = dynamic_cast<GanttGraphicsView*>(views()[0]);
-
-    if(p_view)
-    {
-        p_view->setMaximumWidth(w);
-    }
-
 }
 
 void GanttScene::updateHeight(int h)
@@ -144,6 +136,7 @@ GanttItem *GanttScene::itemByInfo(const GanttInfoLeaf * key) const
 void GanttScene::updateHeaderPos(int dy)
 {
     m_header->setPos(m_header->scenePos().x(),/*m_header->scenePos().y()+*/dy);
+    updateSliderRect();
 }
 
 void GanttScene::onViewResize(const QSize&newSize)
@@ -227,9 +220,11 @@ void GanttScene::addItemsHelper(GanttInfoItem *item)
     GanttInfoLeaf *leaf = dynamic_cast<GanttInfoLeaf*>(item);
     if(leaf)
     {
-        GanttItem *p_item = new GanttItem(leaf,m_header);
+        GanttItem *p_item = new GanttItem(leaf);
+
 
         p_item->setScene(this);
+        p_item->setHeader(m_header);
 
         m_items.append(p_item);
         m_itemByInfo.insert(leaf,p_item);
@@ -252,7 +247,6 @@ void GanttScene::addItemsHelper(GanttInfoItem *item)
 
 void GanttScene::updateItems()
 {
-    qDebug() << "updateItems";
 
     for(int i = 0; i < m_items.size(); ++i)
     {

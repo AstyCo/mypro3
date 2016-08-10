@@ -26,6 +26,8 @@ public:
 
     QRectF rect() const;
 
+    void setHeader(GanttHeader *header);
+
 public slots:
     void setScene(GanttScene *scene);
     void setBoundingRectSize(const QSizeF &boundingRectSize);
@@ -34,6 +36,7 @@ public slots:
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
 
 private:
 
