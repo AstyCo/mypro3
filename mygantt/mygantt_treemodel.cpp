@@ -241,11 +241,9 @@ int GanttTreeModel::columnCount(const QModelIndex &parent) const
 
 bool GanttTreeModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    qDebug() << "GanttTreeModel::setData";
     if (!index.isValid() || index.column() == durationField )
         return false;
 
-    qDebug() << "GanttTreeModel::setData";
 
     GanttInfoItem *info = itemForIndex(index);
     GanttInfoLeaf *leaf = qobject_cast<GanttInfoLeaf*>(info);

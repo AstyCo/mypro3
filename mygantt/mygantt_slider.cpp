@@ -1,5 +1,6 @@
 #include "mygantt_slider.h"
 #include "mygantt_globalvalues.h"
+#include "mygantt_scene.h"
 
 
 #include <QPainter>
@@ -12,19 +13,24 @@
 GanttSlider::GanttSlider(QGraphicsItem* parent) :
     QGraphicsObject(parent)
 {
-    m_sliderPos = 0;
     m_penWidth = 2;
     setCursor(Qt::OpenHandCursor);
     setZValue(20);
+    setVisible(false);
 }
 
-void GanttSlider::setScene(QGraphicsScene *scene)
+void GanttSlider::setScene(GanttScene *scene)
 {
     if(!scene)
         return;
 
-    setSlidersRect(scene->sceneRect());
+    m_scene = scene;
     scene->addItem(this);
+
+
+    setSlidersRect(scene->sceneRect());
+
+
 }
 
 QRectF GanttSlider::boundingRect() const
@@ -34,6 +40,8 @@ QRectF GanttSlider::boundingRect() const
 
 void GanttSlider::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+
+
     QBrush borderBrush(QColor(Qt::black).lighter(130));
     QBrush fillBrush(QColor(Qt::red));
 
@@ -94,6 +102,7 @@ void GanttSlider::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         QPointF eventScenePos = mapToScene(event->pos());
 
         setPos(eventScenePos.x(),scenePos().y());
+        setDt(m_scene->xToDt(eventScenePos.x()));
     }
 }
 
@@ -108,31 +117,88 @@ void GanttSlider::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     QGraphicsItem::mouseReleaseEvent(event);
 }
 
-qreal GanttSlider::sliderPos() const
+void GanttSlider::updateScenePos()
 {
-    return m_sliderPos;
+    if(outOfRange())
+    {
+        setVisible(false);
+    }
+    else
+    {
+        if(!m_scene)
+        {
+            Q_ASSERT(false);
+            return;
+        }
+
+        setVisible(true);
+
+        setPos((m_dt.isValid())?(m_scene->dtToX(m_dt)):(m_slidersRect.left()), m_slidersRect.top());
+    }
 }
 
-void GanttSlider::setSliderPos(const qreal &sliderPos)
+void GanttSlider::updateRange(const UtcDateTime &minDt, const UtcDateTime &maxDt)
 {
-    if(sliderPos == m_sliderPos)
+    m_minDt = minDt;
+    m_maxDt = maxDt;
+
+    emit relativePosChanged(relativePos());
+}
+
+bool GanttSlider::outOfRange()
+{
+    if(!m_scene)
+    {
+        Q_ASSERT(false);
+        return true;
+    }
+
+    return !(m_dt.isValid()) || m_dt < m_scene->startDt() || m_dt > m_scene->finishDt();
+}
+
+bool GanttSlider::initialized() const
+{
+    return m_initialized;
+}
+
+qreal GanttSlider::relativePos() const
+{
+    if(m_dt.isValid() && m_minDt.isValid() && m_maxDt.isValid())
+    {
+        return (m_minDt.microsecondsTo(m_dt) * 1.0) / (m_minDt.microsecondsTo(m_maxDt));
+    }
+    return 0;
+}
+
+void GanttSlider::setDt(const UtcDateTime &dt)
+{
+    m_dt = dt;
+
+    if(!m_initialized)
+        m_initialized = true;
+
+    if(!m_scene)
+    {
+        Q_ASSERT(false);
         return;
-    m_sliderPos = sliderPos;
+    }
 
-    emit sliderPosChanged(sliderPos);
+    if(sender())
+        setPos((m_dt.isValid())?(m_scene->dtToX(m_dt)):(m_slidersRect.left()),scenePos().y());
+    emit dtChanged(dt);
+    emit relativePosChanged(relativePos());
 }
 
-void GanttSlider::updatePos()
+UtcDateTime GanttSlider::dt() const
 {
-    setPos(m_slidersRect.x() + m_sliderPos*m_slidersRect.width(), m_slidersRect.top());
+    return m_dt;
 }
 
 void GanttSlider::setSlidersRect(const QRectF &slidersRect)
 {
     m_slidersRect = slidersRect;
     updateShape();
-
-    updatePos();
+    updateScenePos();
 
 }
 
@@ -141,27 +207,17 @@ void GanttSlider::setPos(const QPointF &pos)
     qreal x = pos.x();
 
     if(x < m_slidersRect.left())
-    {
-
         x = m_slidersRect.left();
-    }
     if(x > m_slidersRect.right())
-    {
         x = m_slidersRect.right();
-    }
-
-    if(m_slidersRect.width())
-        setSliderPos((x-m_slidersRect.left())/(m_slidersRect.width()));
 
     QGraphicsItem::setPos(x,pos.y());
 
-    if(scene())
-        scene()->invalidate(QRectF(),QGraphicsScene::BackgroundLayer);
+    if(m_scene)
+        m_scene->invalidate(QRectF(),QGraphicsScene::BackgroundLayer);
 }
 
 void GanttSlider::setPos(qreal x, qreal y)
 {
     setPos(QPointF(x,y));
 }
-
-

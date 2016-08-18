@@ -210,65 +210,33 @@ void GanttHeader::onItemsAddition(GanttInfoItem* items)
 
 void GanttHeader::initRange()
 {
-    static UtcDateTime lastMinDt = UtcDateTime(),
-                        lastMaxDt = UtcDateTime();
-    static GanttPrecisionMode lastMode = GanttPrecisionMode_count;
+    m_startDt = startByDt(m_minDt);
+    m_finishDt = finishByDt(m_maxDt);
 
-    if(lastMinDt != m_minDt
-            || lastMaxDt != m_maxDt
-            || lastMode != m_mode )
-    {
-        lastMinDt = m_minDt;
-        lastMaxDt = m_maxDt;
-        lastMode = m_mode;
-    }
-    else
-        return;
+    setLengthInMicroseconds(m_startDt.microsecondsTo(m_finishDt));
 
+    if(m_widget)
+        m_widget->repaintDtHeader();
+}
 
+UtcDateTime GanttHeader::startByDt(const UtcDateTime &dt) const
+{
     if(m_headerMode == GanttDiagramMode)
     {
         switch(m_mode)
         {
         case seconds1:
-            m_startDt.setDateTime(QDateTime(QDate(m_minDt.year(),m_minDt.month(),m_minDt.day()),QTime(m_minDt.hour(),m_minDt.minute())));
-            m_finishDt = UtcDateTime(
-                        (QDate(m_maxDt.year(),m_maxDt.month(),m_maxDt.day()))
-                        ,QTime(m_maxDt.hour(),m_maxDt.minute()).addSecs(SECONDS_IN_MINUTE)
-                        ).addMicroseconds(-1);
-
-            break;
+            return UtcDateTime(QDate(dt.year(),dt.month(),dt.day()),QTime(dt.hour(),dt.minute()));
         case minutes1:
-            m_startDt.setDateTime(QDateTime(QDate(m_minDt.year(),m_minDt.month(),m_minDt.day()),QTime(m_minDt.hour(),0)));
-            m_finishDt = UtcDateTime(
-                        (QDate(m_maxDt.year(),m_maxDt.month(),m_maxDt.day()))
-                        ,QTime(m_maxDt.hour(),0).addSecs(SECONDS_IN_HOUR)
-                        ).addMicroseconds(-1);
-
-            break;
+            return UtcDateTime(QDate(dt.year(),dt.month(),dt.day()),QTime(dt.hour(),0));
         case hours1:
-            m_startDt.setDateTime(QDateTime(QDate(m_minDt.year(),m_minDt.month(),m_minDt.day())));
-            m_finishDt = UtcDateTime(
-                        (QDate(m_maxDt.year(),m_maxDt.month(),m_maxDt.day())).addDays(1)
-                        ).addMicroseconds(-1);
-
-            break;
+            return UtcDateTime(QDate(dt.year(),dt.month(),dt.day()));
         case days1:
-            m_startDt.setDateTime(QDateTime(QDate(m_minDt.year(),m_minDt.month(),1)));
-            m_finishDt = UtcDateTime(
-                        (QDate(m_maxDt.year(),m_maxDt.month(),1)).addMonths(1)
-                        ).addMicroseconds(-1);
-
-            break;
+            return UtcDateTime(QDate(dt.year(),dt.month(),1));
         case months1:
-            m_startDt.setDateTime(QDateTime(QDate(m_minDt.year(),1,1)));
-            m_finishDt = UtcDateTime(
-                        (QDate(m_maxDt.year(),1,1)).addYears(1)
-                        ).addMicroseconds(-1);
-
-            break;
+            return UtcDateTime(QDate(dt.year(),1,1));
         default:
-            break;
+            return UtcDateTime();
         }
     }
     else if(m_headerMode == TimelineMode)
@@ -276,178 +244,237 @@ void GanttHeader::initRange()
         switch(m_mode)
         {
         case seconds1:
-            m_startDt.setDateTime(m_minDt.dateTime());
-            m_finishDt = UtcDateTime(
-                        m_maxDt.dateTime()
-                        );
-//            if(minEnd < m_maxDt.minute())
-//                m_finishDt.addSecs(1);
-            break;
+            return dt.dateTime();
         case seconds5:
         {
-            int secBeg = m_minDt.second()/5 * 5,
-                    secEnd = m_maxDt.second()/5 * 5;
-
-            m_startDt.setDateTime(QDateTime(m_minDt.date(),QTime(m_minDt.hour(),m_minDt.minute(),secBeg)));
-            m_finishDt = UtcDateTime(
-                        m_maxDt.date(),QTime(m_minDt.hour(),m_maxDt.minute(),secEnd)
-                        );
-            if(secEnd < m_maxDt.second())
-                m_finishDt = m_finishDt.addSecs(5);
-            break;
+            int secBeg = dt.second()/5 * 5;
+            return UtcDateTime(dt.date(),QTime(dt.hour(),dt.minute(),secBeg));
         }
         case seconds15:
         {
-            int secBeg = m_minDt.second()/15 * 15,
-                    secEnd = m_maxDt.second()/15 * 15;
-
-            m_startDt.setDateTime(QDateTime(m_minDt.date(),QTime(m_minDt.hour(),m_minDt.minute(),secBeg)));
-            m_finishDt = UtcDateTime(
-                        m_maxDt.date(),QTime(m_minDt.hour(),m_maxDt.minute(),secEnd)
-                        );
-            if(secEnd < m_maxDt.second())
-                m_finishDt = m_finishDt.addSecs(15);
-            break;
+            int secBeg = dt.second()/15 * 15;
+            return UtcDateTime(dt.date(),QTime(dt.hour(),dt.minute(),secBeg));
         }
         case seconds30:
         {
-            int secBeg = m_minDt.second()/30 * 30,
-                    secEnd = m_maxDt.second()/30 * 30;
-
-            m_startDt.setDateTime(QDateTime(m_minDt.date(),QTime(m_minDt.hour(),m_minDt.minute(),secBeg)));
-            m_finishDt = UtcDateTime(
-                        m_maxDt.date(),QTime(m_minDt.hour(),m_maxDt.minute(),secEnd)
-                        );
-            if(secEnd < m_maxDt.second())
-                m_finishDt = m_finishDt.addSecs(30);
-            break;
+            int secBeg = dt.second()/30 * 30;
+            return UtcDateTime(dt.date(),QTime(dt.hour(),dt.minute(),secBeg));
         }
         case minutes1:
-            m_startDt.setDateTime(QDateTime(QDate(m_minDt.year(),m_minDt.month(),m_minDt.day()),QTime(m_minDt.hour(),m_minDt.minute())));
-            m_finishDt = UtcDateTime(
-                        (QDate(m_maxDt.year(),m_maxDt.month(),m_maxDt.day()))
-                        ,QTime(m_maxDt.hour(),m_maxDt.minute())
-                        );
-            if(m_finishDt < m_maxDt)
-                m_finishDt = m_finishDt.addSecs(SECONDS_IN_MINUTE);
-            break;
+            return UtcDateTime(QDate(dt.year(),dt.month(),dt.day()),QTime(dt.hour(),dt.minute()));
         case minutes5:
         {
-            int minBeg = m_minDt.minute()/5 * 5,
-                    minEnd = m_maxDt.minute()/5 * 5;
-
-            m_startDt.setDateTime(QDateTime(m_minDt.date(),QTime(m_minDt.hour(),minBeg)));
-            m_finishDt = UtcDateTime(
-                        m_maxDt.date(),QTime(m_maxDt.hour(),minEnd)
-                        );
-            if(minEnd < m_maxDt.minute())
-                m_finishDt = m_finishDt.addSecs(5*SECONDS_IN_MINUTE);
-            break;
+            int minBeg = dt.minute()/5 * 5;
+            return UtcDateTime(dt.date(),QTime(dt.hour(),minBeg));
         }
         case minutes15:
         {
-            int minBeg = m_minDt.minute()/15 * 15,
-                    minEnd = m_maxDt.minute()/15 * 15;
-
-            m_startDt.setDateTime(QDateTime(m_minDt.date(),QTime(m_minDt.hour(),minBeg)));
-            m_finishDt = UtcDateTime(
-                        m_maxDt.date(),QTime(m_maxDt.hour(),minEnd)
-                        );
-            if(minEnd < m_maxDt.minute())
-                m_finishDt = m_finishDt.addSecs(15*SECONDS_IN_MINUTE);
-            break;
+            int minBeg = dt.minute()/15 * 15;
+            return UtcDateTime(dt.date(),QTime(dt.hour(),minBeg));
         }
         case minutes30:
         {
-            int minBeg = m_minDt.minute()/30 * 30,
-                    minEnd = m_maxDt.minute()/30 * 30;
-
-            m_startDt.setDateTime(QDateTime(m_minDt.date(),QTime(m_minDt.hour(),minBeg)));
-            m_finishDt = UtcDateTime(
-                        m_maxDt.date(),QTime(m_maxDt.hour(),minEnd)
-                        );
-            if(minEnd < m_maxDt.minute())
-                m_finishDt = m_finishDt.addSecs(30*SECONDS_IN_MINUTE);
-            break;
+            int minBeg = dt.minute()/30 * 30;
+            return UtcDateTime(dt.date(),QTime(dt.hour(),minBeg));
         }
         case hours1:
-            m_startDt.setDateTime(QDateTime(QDate(m_minDt.year(),m_minDt.month(),m_minDt.day()),QTime(m_minDt.hour(),0)));
-
-            m_finishDt = UtcDateTime(
-                        (QDate(m_maxDt.year(),m_maxDt.month(),m_maxDt.day()))
-                        ,QTime(m_maxDt.hour(),0)
-                        );
-
-
-            if(m_finishDt < m_maxDt)
-                m_finishDt = m_finishDt.addSecs(SECONDS_IN_HOUR);
-
-            break;
+            return UtcDateTime(QDate(dt.year(),dt.month(),dt.day()),QTime(dt.hour(),0));
         case hours6:
         {
-            int hourBeg = m_minDt.hour() / 6 * 6,
-                    hourEnd = m_maxDt.hour() / 6 * 6;
-
-            m_startDt.setDateTime(QDateTime(QDate(m_minDt.year(),m_minDt.month(),m_minDt.day()),QTime(hourBeg,0)));
-
-            m_finishDt = UtcDateTime(
-                        (QDate(m_maxDt.year(),m_maxDt.month(),m_maxDt.day()))
-                        ,QTime(hourEnd,0)
-                        );
-
-
-            if(hourEnd < m_maxDt.hour())
-                m_finishDt = m_finishDt.addSecs(modeToSecond(m_mode));
-
-            break;
+            int hourBeg = dt.hour() / 6 * 6;
+            return UtcDateTime(QDate(dt.year(),dt.month(),dt.day()),QTime(hourBeg,0));
         }
         case hours12:
         {
-            int hourBeg = m_minDt.hour() / 12 * 12,
-                    hourEnd = m_maxDt.hour() / 12 * 12;
+            int hourBeg = dt.hour() / 12 * 12;
+            return UtcDateTime(QDate(dt.year(),dt.month(),dt.day()),QTime(hourBeg,0));
+        }
+        case days1:
+            return UtcDateTime(dt.date());
+        case months1:
+            return UtcDateTime(QDate(dt.year(),dt.month(),1));
+        default:
+            qDebug() <<"GanttHeader::initRange() out of range";
+            return UtcDateTime();
+        }
+    }
+    return UtcDateTime();
+}
 
-            m_startDt.setDateTime(QDateTime(QDate(m_minDt.year(),m_minDt.month(),m_minDt.day()),QTime(hourBeg,0)));
-
-            m_finishDt = UtcDateTime(
-                        (QDate(m_maxDt.year(),m_maxDt.month(),m_maxDt.day()))
+UtcDateTime GanttHeader::finishByDt(const UtcDateTime &dt) const
+{
+    if(m_headerMode == GanttDiagramMode)
+    {
+        switch(m_mode)
+        {
+        case seconds1:
+            return UtcDateTime(
+                        (QDate(dt.year(),dt.month(),dt.day()))
+                        ,QTime(dt.hour(),dt.minute()).addSecs(SECONDS_IN_MINUTE)
+                        ).addMicroseconds(-1);
+        case minutes1:
+            return UtcDateTime(
+                        (QDate(dt.year(),dt.month(),dt.day()))
+                        ,QTime(dt.hour(),0).addSecs(SECONDS_IN_HOUR)
+                        ).addMicroseconds(-1);
+        case hours1:
+            return UtcDateTime(
+                        (QDate(dt.year(),dt.month(),dt.day())).addDays(1)
+                        ).addMicroseconds(-1);
+        case days1:
+            return UtcDateTime(
+                        (QDate(dt.year(),dt.month(),1)).addMonths(1)
+                        ).addMicroseconds(-1);
+        case months1:
+            return UtcDateTime(
+                        (QDate(dt.year(),1,1)).addYears(1)
+                        ).addMicroseconds(-1);
+        default:
+            return UtcDateTime();
+        }
+    }
+    else if(m_headerMode == TimelineMode)
+    {
+        switch(m_mode)
+        {
+        case seconds1:
+            return UtcDateTime(
+                        dt.dateTime()
+                        );
+//            if(minEnd < dt.minute())
+//                m_finishDt.addSecs(1);
+        case seconds5:
+        {
+            int secEnd = dt.second()/5 * 5;
+            UtcDateTime res = UtcDateTime(
+                        dt.date(),QTime(dt.hour(),dt.minute(),secEnd)
+                        );
+            if(secEnd < dt.second())
+                res = res.addSecs(5);
+            return res;
+        }
+        case seconds15:
+        {
+            int secEnd = dt.second()/15 * 15;
+            UtcDateTime res = UtcDateTime(
+                        dt.date(),QTime(dt.hour(),dt.minute(),secEnd)
+                        );
+            if(secEnd < dt.second())
+                res = res.addSecs(15);
+            return res;
+        }
+        case seconds30:
+        {
+            int secEnd = dt.second()/30 * 30;
+            UtcDateTime res = UtcDateTime(
+                        dt.date(),QTime(dt.hour(),dt.minute(),secEnd)
+                        );
+            if(secEnd < dt.second())
+                res = res.addSecs(30);
+            return res;
+        }
+        case minutes1:
+        {
+            UtcDateTime res = UtcDateTime(
+                        (QDate(dt.year(),dt.month(),dt.day()))
+                        ,QTime(dt.hour(),dt.minute())
+                        );
+            if(res < dt)
+                res = res.addSecs(SECONDS_IN_MINUTE);
+            return res;
+        }
+        case minutes5:
+        {
+            int minEnd = dt.minute()/5 * 5;
+            UtcDateTime res = UtcDateTime(
+                        dt.date(),QTime(dt.hour(),minEnd)
+                        );
+            if(minEnd < dt.minute())
+                res = res.addSecs(5*SECONDS_IN_MINUTE);
+            return res;
+        }
+        case minutes15:
+        {
+            int minEnd = dt.minute()/15 * 15;
+            UtcDateTime res = UtcDateTime(
+                        dt.date(),QTime(dt.hour(),minEnd)
+                        );
+            if(minEnd < dt.minute())
+                res = res.addSecs(15*SECONDS_IN_MINUTE);
+            return res;
+        }
+        case minutes30:
+        {
+            int minEnd = dt.minute()/30 * 30;
+            UtcDateTime res = UtcDateTime(
+                        dt.date(),QTime(dt.hour(),minEnd)
+                        );
+            if(minEnd < dt.minute())
+                res = res.addSecs(30*SECONDS_IN_MINUTE);
+            return res;
+        }
+        case hours1:
+        {
+            UtcDateTime res = UtcDateTime(
+                        (QDate(dt.year(),dt.month(),dt.day()))
+                        ,QTime(dt.hour(),0)
+                        );
+            if(res < dt)
+                res = res.addSecs(SECONDS_IN_HOUR);
+            return res;
+        }
+        case hours6:
+        {
+            int hourEnd = dt.hour() / 6 * 6;
+            UtcDateTime res = UtcDateTime(
+                        (QDate(dt.year(),dt.month(),dt.day()))
                         ,QTime(hourEnd,0)
                         );
 
 
-            if(hourEnd < m_maxDt.hour())
-                m_finishDt = m_finishDt.addSecs(modeToSecond(m_mode));
+            if(hourEnd < dt.hour())
+                res = res.addSecs(modeToSecond(m_mode));
 
-            break;
+            return res;
+        }
+        case hours12:
+        {
+            int hourEnd = dt.hour() / 12 * 12;
+            UtcDateTime res = UtcDateTime(
+                        (QDate(dt.year(),dt.month(),dt.day()))
+                        ,QTime(hourEnd,0)
+                        );
+
+
+            if(hourEnd < dt.hour())
+                res = res.addSecs(modeToSecond(m_mode));
+
+            return res;
         }
         case days1:
-            m_startDt.setDateTime(QDateTime(m_minDt.date()));
-            m_finishDt = UtcDateTime(
-                        m_maxDt.date()
+        {
+            UtcDateTime res = UtcDateTime(
+                        dt.date()
                         );
-            if(m_finishDt < m_maxDt)
-                m_finishDt = m_finishDt.addDays(1);
-            break;
+            if(res < dt)
+                res = res.addDays(1);
+            return res;
+        }
         case months1:
-            m_startDt.setDateTime(QDateTime(QDate(m_minDt.year(),m_minDt.month(),1)));
-            m_finishDt = UtcDateTime(
-                        (QDate(m_maxDt.year(),m_maxDt.month(),1))
+        {
+            UtcDateTime res = UtcDateTime(
+                        (QDate(dt.year(),dt.month(),1))
                         );
-            if(m_finishDt < m_maxDt)
-                m_finishDt = m_finishDt.addMonths(1);
-            break;
+            if(res < dt)
+                res = res.addMonths(1);
+            return res;
+        }
         default:
             qDebug() <<"GanttHeader::initRange() out of range";
-            break;
+            return UtcDateTime();
         }
-
     }
-
-    setLengthInMicroseconds(m_startDt.microsecondsTo(m_finishDt));
-
-    if(m_widget)
-        m_widget->repaintDtHeader();
-
-//    qDebug()  << "m_lengthInMicroseconds = " << QString::number(m_lengthInMicroseconds);
+    return UtcDateTime();
 }
 
 QString GanttHeader::topHeaderFormat(GanttHeader::GanttPrecisionMode mode)
@@ -534,13 +561,43 @@ void GanttHeader::clear()
 
 qreal GanttHeader::dtToX(const UtcDateTime &dt) const
 {
+    if(!m_scene)
+        return 0;
+
     qreal sceneW = m_scene->width();
 
-    return
-            ((m_headerMode==TimelineMode)?(MIN_WIDTH_FOR_TIME_VISUALIZING/2):(0)) +
+    return ((m_headerMode==TimelineMode)?(MIN_WIDTH_FOR_TIME_VISUALIZING/2):(0)) +
            ((1.0)*startDt().microsecondsTo(dt))/m_lengthInMicroseconds *
             (sceneW-((m_headerMode==TimelineMode)?(MIN_WIDTH_FOR_TIME_VISUALIZING):(0)));
 
+}
+
+UtcDateTime GanttHeader::xToDt(qreal x) const
+{
+    if(!m_scene)
+    {
+        Q_ASSERT(false);
+        return m_startDt;
+    }
+    qreal sceneW;
+
+    if(m_headerMode == TimelineMode)
+    {
+        sceneW = m_scene->width() - MIN_WIDTH_FOR_TIME_VISUALIZING;
+        if(x<MIN_WIDTH_FOR_TIME_VISUALIZING/2)
+            return m_startDt;
+
+        x-=MIN_WIDTH_FOR_TIME_VISUALIZING/2;
+
+        if(x>sceneW)
+            return m_finishDt;
+    }
+    else if(m_headerMode == GanttDiagramMode)
+    {
+        sceneW = m_scene->width();
+    }
+
+    return m_startDt.addMicroseconds(m_startDt.microsecondsTo(m_finishDt) * (x / sceneW));
 }
 
 bool GanttHeader::onItemsAdditionHelper(GanttInfoItem *item)
@@ -642,6 +699,16 @@ void GanttHeader::updateWidget()
     m_widget->updateRange();
 }
 
+const UtcDateTime &GanttHeader::maxDt() const
+{
+    return m_maxDt;
+}
+
+const UtcDateTime &GanttHeader::minDt() const
+{
+    return m_minDt;
+}
+
 void GanttHeader::setLengthInMicroseconds(long long lengthInMicroseconds)
 {
     m_lengthInMicroseconds = lengthInMicroseconds;
@@ -671,8 +738,8 @@ void GanttHeader::setRange(UtcDateTime min, UtcDateTime max)
     if(min>max)
         return;
 
-    qDebug() << "GanttHeader::setRange "
-             << min <<' ' <<max;
+//    qDebug() << "GanttHeader::setRange "
+//             << min <<' ' <<max;
 
     m_minDt = min;
     m_maxDt = max;
@@ -896,9 +963,6 @@ void GanttHeader::calculateTimeMode()
     if(m_currentWidth < MIN_WIDTH_FOR_TIME_VISUALIZING)
         return;
 
-    qDebug() << "min: "<<m_minDt;
-    qDebug() << "max: "<<m_maxDt;
-
 
     long long coef = (m_minDt.microsecondsTo(m_maxDt)*1.0/((m_currentWidth-MIN_WIDTH_FOR_TIME_VISUALIZING)/MIN_WIDTH_FOR_TIME_VISUALIZING));
 
@@ -916,17 +980,12 @@ void GanttHeader::calculateTimeMode()
 
     if(mode == GanttPrecisionMode_count)
     {
-        qDebug() << QString::number(coef);
-        qDebug() << QString::number(modeToMicrosecond(months1));
-
-
         qDebug() << "GanttHeader::calculateTimeMode() out of range";
         return;
     }
 
     if(m_mode != mode)
     {
-        qDebug() << "mode changed " <<QString::number(mode);
         m_mode = mode;
         initRange();
     }

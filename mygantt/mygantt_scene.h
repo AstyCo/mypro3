@@ -54,11 +54,24 @@ public:
 
     void setRange(UtcDateTime min, UtcDateTime max);
 
+
+    UtcDateTime minDt() const;
+    UtcDateTime maxDt() const;
+    UtcDateTime startDt() const;
+    UtcDateTime finishDt() const;
+
+    UtcDateTime xToDt(qreal x) const;
+    qreal dtToX(const UtcDateTime& dt) const;
+
+    UtcDateTime startByDt(const UtcDateTime& dt) const;
+    UtcDateTime finishByDt(const UtcDateTime& dt) const;
+
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
 
 private:
 
+    void updateSlider();
     void addItemsHelper(GanttInfoItem* item);
     void updateItems();
 

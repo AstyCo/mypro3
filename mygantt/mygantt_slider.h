@@ -1,4 +1,4 @@
-#ifndef GANTTSLIDER_H
+﻿#ifndef GANTTSLIDER_H
 #define GANTTSLIDER_H
 
 #include "utcdatetime.h"
@@ -7,6 +7,7 @@
 #include <QGraphicsObject>
 
 class GanttHeader;
+class GanttScene;
 
 class GanttSlider : public QGraphicsObject
 {
@@ -15,18 +16,22 @@ class GanttSlider : public QGraphicsObject
 public:
     GanttSlider(QGraphicsItem * parent = 0);
 
-    void setScene(QGraphicsScene* scene);
+    void setScene(GanttScene* scene);
 
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     QPainterPath shape() const;
 
     void updateShape();
-    qreal sliderPos() const;
     void setSlidersRect(const QRectF &slidersRect);
 
     void setPos(const QPointF &pos);
     void setPos(qreal x, qreal y);
+
+    UtcDateTime dt() const;
+
+    bool initialized() const;
+    qreal relativePos() const;
 
 protected:
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
@@ -36,23 +41,32 @@ protected:
 
 
 signals:
-    void sliderPosChanged(qreal sliderPos);
+    void relativePosChanged(qreal pos);
+    void dtChanged(UtcDateTime dt);
 
 public slots:
-    void setSliderPos(const qreal &sliderPos);
+    void setDt(const UtcDateTime &dt);
+    void updateScenePos();
+    void updateRange(const UtcDateTime& minDt, const UtcDateTime& maxDt);
 
 private:
-    void updatePos();
+
+    bool outOfRange();
 
 private:
-    qreal m_sliderPos; ///< 0 - левый край, 1 - правый край
-    QRectF m_slidersRect; ///< Область сцены, в которой слайдер может перемещаться
+    QRectF m_slidersRect; ///< The rectangle, where slider can actually move.
 
     QPainterPath m_sliderShape;
     QPainterPath m_rhombus;
 
     qreal m_penWidth;
 
+    UtcDateTime m_dt;
+    UtcDateTime m_minDt,m_maxDt;
+
+    GanttScene* m_scene;
+
+    bool m_initialized;
 };
 
 #endif // GANTTSLIDER_H

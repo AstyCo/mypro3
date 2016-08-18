@@ -36,7 +36,6 @@ public slots:
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
 
 private:
 

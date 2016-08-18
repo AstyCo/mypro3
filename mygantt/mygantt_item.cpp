@@ -82,14 +82,6 @@ void GanttItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
         m_scene->changeExpanding(m_info->parent()->index());
 }
 
-void GanttItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
-{
-    qDebug() << "GanttItem::hoverEnterEvent";
-
-
-    QGraphicsItem::hoverEnterEvent(event);
-}
-
 void GanttItem::setHeader(GanttHeader *header)
 {
     m_header = header;

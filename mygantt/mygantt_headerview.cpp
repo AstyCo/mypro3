@@ -22,14 +22,18 @@ GanttHeaderView::GanttHeaderView(Qt::Orientation orientation, QWidget * parent) 
 void GanttHeaderView::paintEvent(QPaintEvent *e)
 {
     static GanttWidget* p_parentWidget = NULL;
+
     if(!p_parentWidget)
     {
-        if(parentWidget()
-                && parentWidget()->parentWidget())
-            if(!(p_parentWidget = dynamic_cast<GanttWidget*>(parentWidget()
-                                                             ->parentWidget()
-                                                             ->parentWidget())))
-                return;
+        QWidget *p_parent = parentWidget();
+        while(!p_parentWidget)
+        {
+            if(!p_parent)
+                break;
+
+            p_parentWidget = dynamic_cast<GanttWidget*>(p_parent);
+            p_parent = p_parent->parentWidget();
+        }
     }
 
 

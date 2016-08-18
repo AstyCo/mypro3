@@ -32,6 +32,10 @@ public:
 
     UtcDateTime slidersDt() const;
 
+    UtcDateTime minDt() const;
+
+    UtcDateTime maxDt() const;
+
 private slots:
     void on_comboBox_mode_currentIndexChanged(int index);
 

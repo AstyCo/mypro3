@@ -82,29 +82,7 @@ void GanttScene::drawBackground(QPainter *painter, const QRectF &rect)
 
 void GanttScene::drawForeground(QPainter *painter, const QRectF &rect)
 {
-
-//    qDebug() <<"scene rect: "<<sceneRect();
-
     QGraphicsScene::drawForeground(painter,rect);
-
-//    if(m_header->headerMode() == GanttHeader::TimelineMode)
-//    {
-//        QRect headerRect(rect.left(),rect.top(),rect.width(),DEFAULT_HEADER_HEIGHT);
-//        qDebug() << "GanttScene::drawForeground " << headerRect;
-//        // Header background
-//        QLinearGradient linearGradient(QPointF(rect.left(),rect.top()),QPointF(rect.left(),rect.top() + DEFAULT_HEADER_HEIGHT));
-//        linearGradient.setColorAt(0, Qt::cyan);
-//        linearGradient.setColorAt(0.4, Qt::white);
-//        linearGradient.setColorAt(0.6, Qt::white);
-//        linearGradient.setColorAt(1, Qt::cyan);
-//        painter->fillRect(headerRect, linearGradient);
-//        // Center horizontal line
-//        painter->drawLine(QPointF(0,DEFAULT_ITEM_HEIGHT),QPointF(rect.right(),DEFAULT_ITEM_HEIGHT));
-//        // Little and big hatches(with text)
-
-
-
-//    }
 }
 
 void GanttScene::setMode(GanttHeader::GanttPrecisionMode newMode)
@@ -198,13 +176,13 @@ UtcDateTime GanttScene::slidersDt() const
     if(!m_header || !m_slider)
         return UtcDateTime();
 
-    long long len = m_header->startDt().microsecondsTo(m_header->finishDt());
+    return m_slider->dt();
 
-    len = 1.0 * len * m_slider->sliderPos();
+//    long long len = m_header->startDt().microsecondsTo(m_header->finishDt());
 
-    UtcDateTime res = m_header->startDt();
+//    len = 1.0 * len * m_slider->sliderPos();
 
-    return res.addMicroseconds(len);
+//    return m_header->startDt().addMicroseconds(len);
 }
 
 
@@ -212,6 +190,14 @@ void GanttScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
 //    m_header->setPos(event->scenePos());
     QGraphicsScene::mousePressEvent(event);
+}
+
+void GanttScene::updateSlider()
+{
+    if(!m_slider)
+        return;
+
+    m_slider->updateScenePos();
 }
 
 
@@ -285,6 +271,79 @@ void GanttScene::setRange(UtcDateTime min, UtcDateTime max)
 {
     m_header->setRange(min,max);
     updateItems();
+    updateSlider();
+}
+
+UtcDateTime GanttScene::minDt() const
+{
+    if(!m_header)
+        return UtcDateTime();
+    return m_header->minDt();
+}
+
+UtcDateTime GanttScene::maxDt() const
+{
+    if(!m_header)
+        return UtcDateTime();
+    return m_header->maxDt();
+}
+
+UtcDateTime GanttScene::startDt() const
+{
+    if(!m_header)
+        return UtcDateTime();
+    return m_header->startDt();
+}
+
+UtcDateTime GanttScene::finishDt() const
+{
+    if(!m_header)
+        return UtcDateTime();
+    return m_header->finishDt();
+}
+
+UtcDateTime GanttScene::xToDt(qreal x) const
+{
+    if(!m_header)
+    {
+        Q_ASSERT(false);
+        return UtcDateTime();
+    }
+
+    return m_header->xToDt(x);
+}
+
+qreal GanttScene::dtToX(const UtcDateTime &dt) const
+{
+    if(!m_header)
+    {
+        Q_ASSERT(false);
+        return 0;
+    }
+
+    return m_header->dtToX(dt);
+}
+
+UtcDateTime GanttScene::startByDt(const UtcDateTime &dt) const
+{
+    if(!m_header)
+    {
+        Q_ASSERT(false);
+        return UtcDateTime();
+    }
+
+    return m_header->startByDt(dt);
+}
+
+UtcDateTime GanttScene::finishByDt(const UtcDateTime &dt) const
+{
+    if(!m_header)
+    {
+        Q_ASSERT(false);
+        return UtcDateTime();
+    }
+
+    return m_header->finishByDt(dt);
 }
 
 void GanttScene::updateSliderRect()

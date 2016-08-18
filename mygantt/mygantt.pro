@@ -53,9 +53,13 @@ SOURCES += main.cpp\
     mygantt_treeview.cpp \
     mygantt_graphicsview.cpp \
     fromballisticextension.cpp \
-    mygantt_slider.cpp \
     mygantt_headerview.cpp \
-    mygantt_treedelegate.cpp
+    mygantt_treedelegate.cpp \
+    mygantt_intervalslider.cpp \
+    mygantt_slider.cpp \
+    ganttplayersettings.cpp \
+    mygantt_playercontrol.cpp \
+    playercontrolbutton.cpp
 
 HEADERS  += \
     mygantt_globalvalues.h \
@@ -71,8 +75,43 @@ HEADERS  += \
     mygantt_graphicsview.h \
     mygantt_treeview.h \
     fromballisticextension.h \
-    mygantt_slider.h \
     mygantt_headerview.h \
-    mygantt_treedelegate.h
+    mygantt_treedelegate.h \
+    mygantt_intervalslider.h \
+    mygantt_slider.h \
+    ganttplayersettings.h \
+    mygantt_playercontrol.h \
+    playercontrolbutton.h
 
-FORMS    += ganttwidget.ui
+FORMS    += ganttwidget.ui \
+    ganttplayersettings.ui \
+    mygantt_playercontrol.ui
+
+DISTFILES += \
+    Buttons 64x64/back_off_64.png \
+    Buttons 64x64/back_on_64.png \
+    Buttons 64x64/back_step_off_64.png \
+    Buttons 64x64/back_step_on_64.png \
+    Buttons 64x64/begin_off_64.png \
+    Buttons 64x64/begin_on_64.png \
+    Buttons 64x64/end_off_64.png \
+    Buttons 64x64/end_on_64.png \
+    Buttons 64x64/forward_off_64.png \
+    Buttons 64x64/forward_on_64.png \
+    Buttons 64x64/forward_step_off_64.png \
+    Buttons 64x64/forward_step_on_64.png \
+    Buttons 64x64/next_off_64.png \
+    Buttons 64x64/next_on_64.png \
+    Buttons 64x64/pause_off_64.png \
+    Buttons 64x64/pause_on_64.png \
+    Buttons 64x64/prev_off_64.png \
+    Buttons 64x64/prev_on_64.png \
+    Buttons 64x64/rec_off_64.png \
+    Buttons 64x64/rec_on_64.png \
+    Buttons 64x64/reg_speed_on_64.png \
+    Buttons 64x64/reg_step_on_64.png \
+    Buttons 64x64/stop_off_64.png \
+    Buttons 64x64/stop_on_64.png
+
+RESOURCES += \
+    images.qrc

@@ -85,6 +85,7 @@ public:
     void clear();
 
     qreal dtToX(const UtcDateTime& dt) const;
+    UtcDateTime xToDt(qreal x) const;
 
     bool setHeaderMode(const GanttHeaderMode &headerMode);
     void init();
@@ -96,6 +97,8 @@ public:
 
     const UtcDateTime &startDt() const;
     const UtcDateTime &finishDt() const;
+    const UtcDateTime &minDt() const;
+    const UtcDateTime &maxDt() const;
 
     void setRange(UtcDateTime min, UtcDateTime max);
 
@@ -105,13 +108,15 @@ public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     void calculateTimeMode();
     void initRange();
+    UtcDateTime startByDt(const UtcDateTime& dt) const;
+    UtcDateTime finishByDt(const UtcDateTime& dt) const;
+
 
     static long long modeToMicrosecond(GanttPrecisionMode mode, const QDate& date = QDate());
     static long long modeToSecond(GanttPrecisionMode mode, const QDate& date = QDate());
     static int modeToSegmentCount(GanttPrecisionMode mode, const QDate& date = QDate());
     static bool isDrawn(const UtcDateTime& dt, GanttPrecisionMode mode);
     static QString formatForMode(GanttPrecisionMode mode);
-
 
 private:
 
@@ -147,6 +152,7 @@ private:
     bool m_isEmpty;
 
     friend class GanttWidget;
+    friend class GanttScene;
 
 };
 

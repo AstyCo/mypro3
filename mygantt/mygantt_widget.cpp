@@ -22,7 +22,7 @@ GanttWidget::GanttWidget(QWidget *parent) :
 
     if(layout())
     {
-        layout()->setMargin(2);
+        layout()->setMargin(0);
         layout()->setSpacing(0);
     }
 
@@ -40,12 +40,17 @@ GanttWidget::GanttWidget(QWidget *parent) :
     ui->ganttView->setScene(m_scene);
     ui->treeView->setModel(m_model);
 
+    ui->intervalSlider->setScene(m_scene);
+    installEventFilter(ui->intervalSlider);
+
+    connect(m_scene->slider(),SIGNAL(relativePosChanged(qreal)),ui->intervalSlider,SLOT(setCurrentTimePos(qreal)));
+
     connect(ui->treeView,SIGNAL(expanded(QModelIndex)), this,SLOT(expanded(QModelIndex)));
     connect(ui->treeView,SIGNAL(collapsed(QModelIndex)), this,SLOT(collapsed(QModelIndex)));
-    connect(m_scene->slider(),SIGNAL(sliderPosChanged(qreal)),this,SLOT(repaintDtHeader()));
+//    connect(m_scene->slider(),SIGNAL(sliderPosChanged(qreal)),this,SLOT(repaintDtHeader()));
 
-    connect(ui->intervalSlider,SIGNAL(beginMoved(long)),this, SLOT(onSliderMoved()));
-    connect(ui->intervalSlider,SIGNAL(endMoved(long)),this, SLOT(onSliderMoved()));
+    connect(ui->intervalSlider,SIGNAL(beginMoved(long long)),this, SLOT(onSliderMoved()));
+    connect(ui->intervalSlider,SIGNAL(endMoved(long long)),this, SLOT(onSliderMoved()));
 
 
 
@@ -126,7 +131,6 @@ GanttWidget::GanttWidget(QWidget *parent) :
 //    testL.append(test3);
 
     addItems(testList);
-
 }
 
 GanttWidget::~GanttWidget()
@@ -254,6 +258,16 @@ void GanttWidget::updatePosHelper(GanttInfoItem *item)
     }
 }
 
+UtcDateTime GanttWidget::maxDt() const
+{
+    return m_maxDt;
+}
+
+UtcDateTime GanttWidget::minDt() const
+{
+    return m_minDt;
+}
+
 
 
 
@@ -261,7 +275,7 @@ void GanttWidget::updatePosHelper(GanttInfoItem *item)
 
 void GanttWidget::on_pushButton_slider_clicked()
 {
-//    m_scene->slider()->setVisible(!(m_scene->slider()->isVisible()));
+    //    m_scene->slider()->setVisible(!(m_scene->slider()->isVisible()));
 
     if(UtcDateTime(m_scene->m_header->m_minDt).addSecs(13*SECONDS_IN_MINUTE) > UtcDateTime(m_scene->m_header->m_maxDt).addSecs(-13*SECONDS_IN_MINUTE))
         m_scene->setRange( UtcDateTime(m_scene->m_header->m_minDt).addSecs(SECONDS_IN_MINUTE/2)
@@ -293,6 +307,15 @@ void GanttWidget::updateRange()
     m_maxDt = m_scene->m_header->m_maxDt;
 
     m_scene->update();
+
+    if(m_scene->m_slider)
+    {
+        if(!m_scene->m_slider->initialized())
+            m_scene->m_slider->setDt(m_minDt);
+        m_scene->m_slider->updateRange(m_minDt,m_maxDt);
+    }
+
+    ui->intervalSlider->setLimits(m_minDt.toMicrosecondsSinceEpoch(),m_maxDt.toMicrosecondsSinceEpoch());
 }
 
 QList<GanttInfoItem*> generateTest()
