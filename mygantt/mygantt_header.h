@@ -111,6 +111,9 @@ public:
     UtcDateTime startByDt(const UtcDateTime& dt) const;
     UtcDateTime finishByDt(const UtcDateTime& dt) const;
 
+    UtcDateTime nextStart(const UtcDateTime& start) const;
+    UtcDateTime prevFinish(const UtcDateTime& finish) const;
+
 
     static long long modeToMicrosecond(GanttPrecisionMode mode, const QDate& date = QDate());
     static long long modeToSecond(GanttPrecisionMode mode, const QDate& date = QDate());

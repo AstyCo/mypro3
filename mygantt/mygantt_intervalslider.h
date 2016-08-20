@@ -23,6 +23,8 @@ public:
     UtcDateTime posToDt(qreal pos) const;
     UtcDateTime valToDt(long long val) const;
     long long dtToVal(const UtcDateTime& dt) const;
+    UtcDateTime closestStartDt(long long val) const;
+    UtcDateTime closestFinishDt(long long val) const;
 
 
 public slots:
@@ -33,7 +35,8 @@ protected:
     void drawSliderLine(QPainter *painter, const QRect &sliderRect) const;
 
     void mouseMoveEvent(QMouseEvent *e);
-    void moveHandles(long long deltaVal);
+    bool moveHandles(long long deltaVal);
+    void mousePressEvent(QMouseEvent *e);
 
     void keyPressEvent(QKeyEvent *e);
     void keyReleaseEvent(QKeyEvent *e);
@@ -47,6 +50,7 @@ private:
     GanttScene* m_scene;
     GanttWidget* m_widget;
     long long m_shiftRange;
+    QPoint m_lastPos;
 };
 
 #endif // GANTTSLIDER_H

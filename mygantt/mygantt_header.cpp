@@ -477,6 +477,314 @@ UtcDateTime GanttHeader::finishByDt(const UtcDateTime &dt) const
     return UtcDateTime();
 }
 
+UtcDateTime GanttHeader::nextStart(const UtcDateTime &start) const
+{
+    if(!m_widget)
+    {
+        qDebug() << "GanttHeader::nextStart : NULL GanttWidget*";
+        return start;
+    }
+
+    if(m_headerMode == GanttDiagramMode)
+    {
+        switch(m_mode)
+        {
+        case seconds1:
+        {
+            UtcDateTime res = start.addSecs( 1);
+            if(res > m_widget->maxDt())
+                return start;
+            return res;
+        }
+        case minutes1:
+        {
+            UtcDateTime res = start.addSecs( SECONDS_IN_MINUTE);
+            if(res > m_widget->maxDt())
+                return start;
+            return res;
+        }
+        case hours1:
+        {
+            UtcDateTime res = start.addSecs( SECONDS_IN_HOUR);
+            if(res > m_widget->maxDt())
+                return start;
+            return res;
+        }
+        case days1:
+        {
+            UtcDateTime res = start.addDays(1);
+            if(res > m_widget->maxDt())
+                return start;
+            return res;
+        }
+        case months1:
+        {
+            UtcDateTime res = start.addMonths(1);
+            if(res > m_widget->maxDt())
+                return start;
+            return res;
+        }
+        default:
+            return UtcDateTime();
+        }
+    }
+    else if(m_headerMode == TimelineMode)
+    {
+        switch(m_mode)
+        {
+        case seconds1:
+        {
+            UtcDateTime res = start.addSecs(1);
+            if(res > m_widget->maxDt())
+                return start;
+            return res;
+        }
+        case seconds5:
+        {
+            UtcDateTime res = start.addSecs(5);
+            if(res > m_widget->maxDt())
+                return start;
+            return res;
+        }
+        case seconds15:
+        {
+            UtcDateTime res = start.addSecs(15);
+            if(res > m_widget->maxDt())
+                return start;
+            return res;
+        }
+        case seconds30:
+        {
+            UtcDateTime res = start.addSecs(30);
+            if(res > m_widget->maxDt())
+                return start;
+            return res;
+        }
+        case minutes1:
+        {
+            UtcDateTime res = start.addSecs(1 * SECONDS_IN_MINUTE);
+            if(res > m_widget->maxDt())
+                return start;
+            return res;
+        }
+        case minutes5:
+        {
+            UtcDateTime res = start.addSecs(5 * SECONDS_IN_MINUTE);
+            if(res > m_widget->maxDt())
+                return start;
+            return res;
+        }
+        case minutes15:
+        {
+            UtcDateTime res = start.addSecs(15 * SECONDS_IN_MINUTE);
+            if(res > m_widget->maxDt())
+                return start;
+            return res;
+        }
+        case minutes30:
+        {
+            UtcDateTime res = start.addSecs(30 * SECONDS_IN_MINUTE);
+            if(res > m_widget->maxDt())
+                return start;
+            return res;
+        }
+        case hours1:
+        {
+            UtcDateTime res = start.addSecs( 1 * SECONDS_IN_HOUR);
+            if(res > m_widget->maxDt())
+                return start;
+            return res;
+        }
+        case hours6:
+        {
+            UtcDateTime res = start.addSecs( 6 * SECONDS_IN_HOUR);
+            if(res > m_widget->maxDt())
+                return start;
+            return res;
+        }
+        case hours12:
+        {
+            UtcDateTime res = start.addSecs( 12 * SECONDS_IN_HOUR);
+            if(res > m_widget->maxDt())
+                return start;
+            return res;
+        }
+        case days1:
+        {
+            UtcDateTime res = start.addDays(1);
+            if(res > m_widget->maxDt())
+                return start;
+            return res;
+        }
+        case months1:
+        {
+            UtcDateTime res = start.addMonths(1);
+            if(res > m_widget->maxDt())
+                return start;
+            return res;
+        }
+        default:
+            qDebug() <<"GanttHeader::nextStart out of range";
+            return start;
+        }
+    }
+    return start;
+}
+
+UtcDateTime GanttHeader::prevFinish(const UtcDateTime &finish) const
+{
+    if(!m_widget)
+    {
+        qDebug() << "GanttHeader::prevFinish : NULL GanttWidget*";
+        return finish;
+    }
+
+    if(m_headerMode == GanttDiagramMode)
+    {
+        switch(m_mode)
+        {
+        case seconds1:
+        {
+            UtcDateTime res = finish.addSecs(- 1);
+            if(res < m_widget->minDt())
+                return finish;
+            return res;
+        }
+        case minutes1:
+        {
+            UtcDateTime res = finish.addSecs(- SECONDS_IN_MINUTE);
+            if(res < m_widget->minDt())
+                return finish;
+            return res;
+        }
+        case hours1:
+        {
+            UtcDateTime res = finish.addSecs(- SECONDS_IN_HOUR);
+            if(res < m_widget->minDt())
+                return finish;
+            return res;
+        }
+        case days1:
+        {
+            UtcDateTime res = finish.addDays(-1);
+            if(res < m_widget->minDt())
+                return finish;
+            return res;
+        }
+        case months1:
+        {
+            UtcDateTime res = finish.addMonths(-1);
+            if(res < m_widget->minDt())
+                return finish;
+            return res;
+        }
+        default:
+            return finish;
+        }
+    }
+    else if(m_headerMode == TimelineMode)
+    {
+        switch(m_mode)
+        {
+        case seconds1:
+        {
+            UtcDateTime res = finish.addSecs(-1);
+            if(res < m_widget->minDt())
+                return finish;
+            return res;
+        }
+        case seconds5:
+        {
+            UtcDateTime res = finish.addSecs(-5);
+            if(res < m_widget->minDt())
+                return finish;
+            return res;
+        }
+        case seconds15:
+        {
+            UtcDateTime res = finish.addSecs(-15);
+            if(res < m_widget->minDt())
+                return finish;
+            return res;
+        }
+        case seconds30:
+        {
+            UtcDateTime res = finish.addSecs(-30);
+            if(res < m_widget->minDt())
+                return finish;
+            return res;
+        }
+        case minutes1:
+        {
+            UtcDateTime res = finish.addSecs(-1 * SECONDS_IN_MINUTE);
+            if(res < m_widget->minDt())
+                return finish;
+            return res;
+        }
+        case minutes5:
+        {
+            UtcDateTime res = finish.addSecs(-5 * SECONDS_IN_MINUTE);
+            if(res < m_widget->minDt())
+                return finish;
+            return res;
+        }
+        case minutes15:
+        {
+            UtcDateTime res = finish.addSecs(-15 * SECONDS_IN_MINUTE);
+            if(res < m_widget->minDt())
+                return finish;
+            return res;
+        }
+        case minutes30:
+        {
+            UtcDateTime res = finish.addSecs(-30 * SECONDS_IN_MINUTE);
+            if(res < m_widget->minDt())
+                return finish;
+            return res;
+        }
+        case hours1:
+        {
+            UtcDateTime res = finish.addSecs(- 1 * SECONDS_IN_HOUR);
+            if(res < m_widget->minDt())
+                return finish;
+            return res;
+        }
+        case hours6:
+        {
+            UtcDateTime res = finish.addSecs(- 6 * SECONDS_IN_HOUR);
+            if(res < m_widget->minDt())
+                return finish;
+            return res;
+        }
+        case hours12:
+        {
+            UtcDateTime res = finish.addSecs(- 12 * SECONDS_IN_HOUR);
+            if(res < m_widget->minDt())
+                return finish;
+            return res;
+        }
+        case days1:
+        {
+            UtcDateTime res = finish.addDays(-1);
+            if(res < m_widget->minDt())
+                return finish;
+            return res;
+        }
+        case months1:
+        {
+            UtcDateTime res = finish.addMonths(-1);
+            if(res < m_widget->minDt())
+                return finish;
+            return res;
+        }
+        default:
+            qDebug() <<"GanttHeader::prevFinish out of range";
+            return finish;
+        }
+    }
+    return finish;
+}
+
 QString GanttHeader::topHeaderFormat(GanttHeader::GanttPrecisionMode mode)
 {
     switch (mode)

@@ -346,6 +346,28 @@ UtcDateTime GanttScene::finishByDt(const UtcDateTime &dt) const
     return m_header->finishByDt(dt);
 }
 
+UtcDateTime GanttScene::nextStart(const UtcDateTime &dt) const
+{
+    if(!m_header)
+    {
+        Q_ASSERT(false);
+        return UtcDateTime();
+    }
+
+    return m_header->nextStart(dt);
+}
+
+UtcDateTime GanttScene::prevFinish(const UtcDateTime &dt) const
+{
+    if(!m_header)
+    {
+        Q_ASSERT(false);
+        return UtcDateTime();
+    }
+
+    return m_header->prevFinish(dt);
+}
+
 void GanttScene::updateSliderRect()
 {
     if(!m_slider || !m_header)

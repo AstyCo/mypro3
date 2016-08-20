@@ -55,10 +55,10 @@ void GanttIntervalSlider::drawSliderLine(QPainter *painter, const QRect &sliderR
 //    return IntervalSlider::drawSliderLine(painter,sliderRect);
 
     int top = sliderRect.y() + m_offsetV,
-            width = sliderRect.width() - 2 * halfHandleH();
+            width = sliderRect.width() - 2 * halfHandleSize();
 
-    int beginRectLeft = sliderRect.x() + halfHandleH(),
-            beginRectWidth = valueToPoint(m_beginValue,BeginHandle) - halfHandleH() - sliderRect.x(),
+    int beginRectLeft = sliderRect.x() + halfHandleSize(),
+            beginRectWidth = valueToPoint(m_beginValue,BeginHandle) - halfHandleSize() - sliderRect.x(),
             innerRectLeft = beginRectLeft + beginRectWidth,
             innerRectWidth = valueToPoint(m_endValue,EndHandle) - beginRectWidth,
             endRectLeft = innerRectLeft + innerRectWidth,
@@ -109,7 +109,7 @@ void GanttIntervalSlider::drawSliderLine(QPainter *painter, const QRect &sliderR
     }
 
     // DRAW CURRENT TIME
-    QRect currentTimeRect(m_currentTimePos * width - m_currentTimeRectWidth/2 + halfHandleH(),
+    QRect currentTimeRect(m_currentTimePos * width - m_currentTimeRectWidth/2 + halfHandleSize(),
                           sliderRect.y(),
                           m_currentTimeRectWidth,
                           intervalSliderHeight()
@@ -121,23 +121,18 @@ void GanttIntervalSlider::drawSliderLine(QPainter *painter, const QRect &sliderR
 
 void GanttIntervalSlider::mouseMoveEvent(QMouseEvent *e)
 {
-    long long val,deltaVal;
+    long long val;
 
     if(m_clippedHandle==BeginHandle)
     {
         val = pointToValue(e->pos(),BeginHandle);
         if(m_shiftModifier)
         {
-            deltaVal = val-beginHandle();
-            if(beginHandle() + m_shiftRange + deltaVal>m_maxValue)
-            {
-                deltaVal=m_maxValue-(beginHandle() + m_shiftRange);
-            }
-            moveHandles(deltaVal);
+            moveHandles(0);
         }
-        else if(m_scene->startByDt(valToDt(beginHandle())) != m_scene->startByDt(valToDt(val)))
+        else if(m_scene->startByDt(valToDt(beginHandle())) != closestStartDt(val))
         {
-            setBeginHandle(dtToVal(m_scene->startByDt(valToDt(val))));
+            setBeginHandle(dtToVal(closestStartDt(val)));
         }
     }
     else if(m_clippedHandle==EndHandle)
@@ -145,44 +140,90 @@ void GanttIntervalSlider::mouseMoveEvent(QMouseEvent *e)
         val = pointToValue(e->pos(),EndHandle);
         if(m_shiftModifier)
         {
-            deltaVal = val-endHandle();
-            if(beginHandle()+deltaVal<m_minValue)
-            {
-                deltaVal=-beginHandle()+m_minValue;
-            }
-            moveHandles(deltaVal);
+            moveHandles(0);
         }
-        else if(m_scene->finishByDt(valToDt(endHandle())) != m_scene->finishByDt(valToDt(val)))
+        else if(m_scene->finishByDt(valToDt(endHandle())) != closestFinishDt(val))
             {
-                setEndHandle(dtToVal(m_scene->finishByDt(valToDt(val))));
+                setEndHandle(dtToVal(m_scene->finishByDt(closestFinishDt(val))));
             }
     }
+    m_lastPos = e->pos();
 }
 
-void GanttIntervalSlider::moveHandles(long long deltaVal)
+bool GanttIntervalSlider::moveHandles(long long deltaVal)
 {
+    Q_UNUSED(deltaVal);
+
     if(m_scene)
     {
         UtcDateTime lastStart =  m_scene->startByDt(valToDt(beginHandle())),
                        lastFinish = m_scene->finishByDt(valToDt(endHandle()));
 
-        UtcDateTime newStart = m_scene->startByDt(valToDt(beginHandle()+deltaVal))
-                , newFinish = m_scene->finishByDt(valToDt(beginHandle() + m_shiftRange + deltaVal));
+        UtcDateTime newStart,
+                 newFinish;
 
-        if(newStart != lastStart || newFinish != lastFinish)
+        long long beg,end;
+        if(m_clippedHandle == BeginHandle)
+        {
+            beg = pointToValue(m_lastPos, BeginHandle);
+            end = beg + m_shiftRange;
+        }
+        else if (m_clippedHandle == EndHandle)
+        {
+            end = pointToValue(m_lastPos, EndHandle);
+            beg = end - m_shiftRange;
+        }
+
+        if(beg < m_minValue)
+        {
+
+            beg = m_minValue;
+            end = beg + m_shiftRange;
+        }
+        if(end > m_maxValue)
+        {
+            end = m_maxValue;
+            beg = end - m_shiftRange;
+        }
+
+        newStart = closestStartDt(beg);
+        newFinish = closestFinishDt(end);
+
+        bool changedStart = false, changedFinish = false;
+
+        blockSignals(true);
+        if(newStart != lastStart)
         {
             setBeginHandle(dtToVal(newStart));
-            setEndHandle(dtToVal(newFinish));
-
-            emit beginMoved(beginHandle());
-            emit valueChanged(BeginHandle , beginHandle());
-            emit endMoved(endHandle());
-            emit valueChanged(EndHandle , endHandle());
-            return;
+            changedStart = true;
         }
-        else
-            return;
+        if(newFinish != lastFinish)
+        {
+            setEndHandle(dtToVal(newFinish));
+            changedFinish = true;
+        }
+        blockSignals(false);
+
+        if(changedStart)
+        {
+            emit valueChanged(IntervalSlider::BeginHandle,m_beginValue);
+            emit beginMoved(m_beginValue);
+        }
+        if(changedFinish)
+        {
+            emit valueChanged(IntervalSlider::EndHandle,m_endValue);
+            emit endMoved(m_endValue);
+        }
+        return (m_clippedHandle == BeginHandle && changedStart
+                || m_clippedHandle == EndHandle && changedFinish);
     }
+    return false;
+}
+
+void GanttIntervalSlider::mousePressEvent(QMouseEvent *e)
+{
+    m_lastPos = e->pos();
+    IntervalSlider::mousePressEvent(e);
 }
 
 void GanttIntervalSlider::keyPressEvent(QKeyEvent *e)
@@ -225,6 +266,42 @@ UtcDateTime GanttIntervalSlider::valToDt(long long val) const
 long long GanttIntervalSlider::dtToVal(const UtcDateTime &dt) const
 {
     return dt.toMicrosecondsSinceEpoch();
+}
+
+UtcDateTime GanttIntervalSlider::closestStartDt(long long val) const
+{
+    if(!m_scene)
+    {
+        qDebug() << "GanttIntervalSlider::closestStartDt m_scene is NULL";
+        return UtcDateTime();
+
+    }
+    UtcDateTime valDt = valToDt(val);
+    UtcDateTime start = m_scene->startByDt(valDt),
+                nextStart = m_scene->nextStart(start);
+
+    if(valDt.toMicrosecondsSinceEpoch() - start.toMicrosecondsSinceEpoch()
+            > nextStart.toMicrosecondsSinceEpoch() - valDt.toMicrosecondsSinceEpoch() )
+        return nextStart;
+    return start;
+}
+
+UtcDateTime GanttIntervalSlider::closestFinishDt(long long val) const
+{
+    if(!m_scene)
+    {
+        qDebug() << "GanttIntervalSlider::closestFinishDt m_scene is NULL";
+        return UtcDateTime();
+
+    }
+    UtcDateTime valDt = valToDt(val);
+    UtcDateTime finish = m_scene->finishByDt(valDt),
+                prevFinish = m_scene->prevFinish(finish);
+
+    if(valDt.toMicrosecondsSinceEpoch() - prevFinish.toMicrosecondsSinceEpoch()
+            > finish.toMicrosecondsSinceEpoch() - valDt.toMicrosecondsSinceEpoch() )
+        return finish;
+    return prevFinish;
 }
 
 void GanttIntervalSlider::setCurrentTimeRectColor(const QColor &currentTimeRectColor)

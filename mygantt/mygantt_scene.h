@@ -66,6 +66,10 @@ public:
     UtcDateTime startByDt(const UtcDateTime& dt) const;
     UtcDateTime finishByDt(const UtcDateTime& dt) const;
 
+    UtcDateTime nextStart(const UtcDateTime& dt) const;
+    UtcDateTime prevFinish(const UtcDateTime& dt) const;
+
+
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
 
