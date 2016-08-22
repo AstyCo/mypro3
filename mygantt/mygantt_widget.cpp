@@ -43,7 +43,10 @@ GanttWidget::GanttWidget(QWidget *parent) :
     ui->intervalSlider->setScene(m_scene);
     installEventFilter(ui->intervalSlider);
 
-    connect(m_scene->slider(),SIGNAL(relativePosChanged(qreal)),ui->intervalSlider,SLOT(setCurrentTimePos(qreal)));
+    connect(m_scene->slider(),SIGNAL(dtChanged(UtcDateTime)),ui->intervalSlider,SLOT(setCurrentTime(UtcDateTime)));
+
+
+    connect(m_scene, SIGNAL(viewResized()),ui->intervalSlider,SLOT(updateRange()));
 
     connect(ui->treeView,SIGNAL(expanded(QModelIndex)), this,SLOT(expanded(QModelIndex)));
     connect(ui->treeView,SIGNAL(collapsed(QModelIndex)), this,SLOT(collapsed(QModelIndex)));
@@ -213,8 +216,7 @@ void GanttWidget::onSliderMoved()
     if(!m_scene || !m_scene->m_header)
         return;
 
-    m_scene->setRange(m_minDt.addMicroseconds(ui->intervalSlider->begin() * m_minDt.microsecondsTo(m_maxDt))
-                      , m_minDt.addMicroseconds(ui->intervalSlider->end() * m_minDt.microsecondsTo(m_maxDt)));
+    m_scene->setRange(ui->intervalSlider->beginDt(),ui->intervalSlider->endDt());
 }
 
 void GanttWidget::updatePos(GanttInfoNode *from)
@@ -314,8 +316,16 @@ void GanttWidget::updateRange()
             m_scene->m_slider->setDt(m_minDt);
         m_scene->m_slider->updateRange(m_minDt,m_maxDt);
     }
+    updateSliderLimits();
+}
 
-    ui->intervalSlider->setLimits(m_minDt.toMicrosecondsSinceEpoch(),m_maxDt.toMicrosecondsSinceEpoch());
+void GanttWidget::updateSliderLimits()
+{
+    GanttHeader::GanttPrecisionMode mode = m_scene->calculateTimeMode(m_minDt,m_maxDt);
+
+    ui->intervalSlider->setLimits(m_scene->startByDt(m_minDt,mode).toMicrosecondsSinceEpoch(),
+                                    m_scene->finishByDt(m_maxDt,mode).toMicrosecondsSinceEpoch());
+
 }
 
 QList<GanttInfoItem*> generateTest()
@@ -335,8 +345,8 @@ QList<GanttInfoItem*> generateTest()
             GanttInfoLeaf *leaf = new GanttInfoLeaf;
 
             int year = 2016,
-                    month = 1 + qrand()%6,
-                    day = 1 + qrand()%28,
+                    month = 1 /*+ qrand()%6*/,
+                    day = 1 + qrand()%2,
                     hour = qrand()%2,
                     minute = qrand()%60,
                     sec = qrand()%60,
@@ -344,9 +354,12 @@ QList<GanttInfoItem*> generateTest()
 
             UtcDateTime start(year,month,day,hour,minute,sec,microsec),
                     finish = start
-                        .addMicroseconds(((long long)qrand()%SECONDS_IN_DAY)*1000000)
-                        .addDays(qrand()%28)
-                        .addMonths(qrand()%12);
+                        .addMicroseconds((hour * SECONDS_IN_HOUR * _MICROSECONDS_IN_SECOND)
+                                         + minute * SECONDS_IN_MINUTE * _MICROSECONDS_IN_SECOND
+                                         + sec * _MICROSECONDS_IN_SECOND
+                                         + microsec)
+                        .addDays(day - 1)
+                        .addMonths(month - 1);
 
             leaf->setStart(start);
             leaf->setFinish(finish);

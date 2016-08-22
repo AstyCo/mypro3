@@ -4,6 +4,8 @@
 #include "intervalslider.h"
 #include "utcdatetime.h"
 
+#include "mygantt_header.h"
+
 class GanttScene;
 class GanttWidget;
 
@@ -27,8 +29,22 @@ public:
     UtcDateTime closestFinishDt(long long val) const;
 
 
+    UtcDateTime beginDt() const;
+    UtcDateTime endDt() const;
+
+
+
+
+private:
+    UtcDateTime closestStartDtHelper(const UtcDateTime& val, GanttHeader::GanttPrecisionMode mode) const;
+    UtcDateTime closestFinishDtHelper(const UtcDateTime& val, GanttHeader::GanttPrecisionMode mode) const;
+
+
 public slots:
     void setCurrentTimePos(const qreal &currentTimePos);
+    void setCurrentTime(const UtcDateTime &dt);
+    void checkLimits(const UtcDateTime &start, const UtcDateTime &finish);
+    void updateRange();
 
 protected:
     void drawHandle(QPainter *painter, const QRect &handleRect, bool is_selected) const;
@@ -42,6 +58,7 @@ protected:
     void keyReleaseEvent(QKeyEvent *e);
 
 private:
+    UtcDateTime m_currentTime;
     qreal m_currentTimePos;
 
     qreal m_currentTimeRectWidth;

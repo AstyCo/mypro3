@@ -8,6 +8,7 @@
 #include <QLinearGradient>
 #include <QBrush>
 #include <QFrame>
+#include <QPen>
 
 #include <QMouseEvent>
 
@@ -17,10 +18,10 @@ GanttIntervalSlider::GanttIntervalSlider(QWidget *parent )
     : IntervalSlider(parent)
 {
     setOffsetV(2);
-    setSliderV(7);
-    setHandleSize(5);
+    setHandleSize(6);
+    setSliderV(8);
 
-    setCurrentTimeRectWidth(3);
+    setCurrentTimeRectWidth(4);
     setCurrentTimePos(0);
     setCurrentTimeRectColor(Qt::red);
 
@@ -42,20 +43,33 @@ GanttIntervalSlider::GanttIntervalSlider(QWidget *parent )
 
 void GanttIntervalSlider::drawHandle(QPainter *painter, const QRect &handleRect, bool is_selected) const
 {
-//    return IntervalSlider::drawHandle(painter,handleRect,is_selected);
-
     painter->setPen(Qt::black);
-    painter->drawRect(handleRect);
 
-    painter->fillRect(handleRect,QBrush((is_selected)?(Qt::black):(QColor(Qt::blue))));
+    qDebug() <<"handleSize(): "<<QString::number(handleSize());
+    qDebug() <<"halfHandleSize(): "<<QString::number(halfHandleSize());
+
+    qDebug() << "handleRect: "<<handleRect;
+
+    qreal penWidth = 0;
+    QColor color = (is_selected)?(Qt::black):(QColor(Qt::blue));
+    QPen pen(color,penWidth,Qt::SolidLine,Qt::SquareCap,Qt::MiterJoin);
+    painter->setPen(pen);
+//    painter->setRenderHint(QPainter::Antialiasing,true);
+
+    painter->setBrush(QBrush(color));
+    painter->drawRoundedRect(handleRect.adjusted(penWidth,penWidth,-penWidth,-penWidth)
+                             ,1,1);
+
+
+//    painter->fillRect(handleRect,QBrush((is_selected)?(Qt::black):(QColor(Qt::blue))));
 }
 
 void GanttIntervalSlider::drawSliderLine(QPainter *painter, const QRect &sliderRect) const
 {
-//    return IntervalSlider::drawSliderLine(painter,sliderRect);
+    qDebug() << "sliderRect: "<<sliderRect;
 
     int top = sliderRect.y() + m_offsetV,
-            width = sliderRect.width() - 2 * halfHandleSize();
+            width = sliderRect.width() - handleSize();
 
     int beginRectLeft = sliderRect.x() + halfHandleSize(),
             beginRectWidth = valueToPoint(m_beginValue,BeginHandle) - halfHandleSize() - sliderRect.x(),
@@ -109,11 +123,13 @@ void GanttIntervalSlider::drawSliderLine(QPainter *painter, const QRect &sliderR
     }
 
     // DRAW CURRENT TIME
-    QRect currentTimeRect(m_currentTimePos * width - m_currentTimeRectWidth/2 + halfHandleSize(),
+    QRect currentTimeRect(/*m_currentTimePos * width*//*beginRectLeft +*/ valueToPoint(dtToVal(m_currentTime),NoHandle)
+                          - (m_currentTimeRectWidth+2)/2,
                           sliderRect.y(),
                           m_currentTimeRectWidth,
                           intervalSliderHeight()
                           );
+
     painter->drawRect(currentTimeRect);
     painter->fillRect(currentTimeRect, m_currentTimeRectColor);
 
@@ -148,6 +164,7 @@ void GanttIntervalSlider::mouseMoveEvent(QMouseEvent *e)
             }
     }
     m_lastPos = e->pos();
+    update();
 }
 
 bool GanttIntervalSlider::moveHandles(long long deltaVal)
@@ -274,16 +291,16 @@ UtcDateTime GanttIntervalSlider::closestStartDt(long long val) const
     {
         qDebug() << "GanttIntervalSlider::closestStartDt m_scene is NULL";
         return UtcDateTime();
-
     }
-    UtcDateTime valDt = valToDt(val);
-    UtcDateTime start = m_scene->startByDt(valDt),
-                nextStart = m_scene->nextStart(start);
 
-    if(valDt.toMicrosecondsSinceEpoch() - start.toMicrosecondsSinceEpoch()
-            > nextStart.toMicrosecondsSinceEpoch() - valDt.toMicrosecondsSinceEpoch() )
-        return nextStart;
-    return start;
+
+    UtcDateTime valDt = valToDt(val);
+    GanttHeader::GanttPrecisionMode mode = m_scene->calculateTimeMode(valDt, endDt());
+
+    UtcDateTime res = closestStartDtHelper(valDt,mode)
+            ,tmpVar;
+
+    return res;
 }
 
 UtcDateTime GanttIntervalSlider::closestFinishDt(long long val) const
@@ -295,27 +312,131 @@ UtcDateTime GanttIntervalSlider::closestFinishDt(long long val) const
 
     }
     UtcDateTime valDt = valToDt(val);
-    UtcDateTime finish = m_scene->finishByDt(valDt),
-                prevFinish = m_scene->prevFinish(finish);
+    GanttHeader::GanttPrecisionMode mode = m_scene->calculateTimeMode(beginDt(), valDt);
+
+    UtcDateTime res = closestFinishDtHelper(valDt,mode)
+            ,tmpVar;
+
+    return res;
+}
+
+UtcDateTime GanttIntervalSlider::beginDt() const
+{
+    return valToDt(beginHandle());
+}
+
+UtcDateTime GanttIntervalSlider::endDt() const
+{
+    return valToDt(endHandle());
+}
+
+void GanttIntervalSlider::updateRange()
+{
+    if(!m_scene)
+    {
+        qDebug() << "GanttIntervalSlider::updateRange m_scene is NULL";
+        return;
+    }
+    if(!m_widget)
+    {
+        qDebug() << "GanttIntervalSlider::updateRange m_widget is NULL";
+        return;
+    }
+
+    qDebug() << "GanttIntervalSlider::updateRange";
+
+    UtcDateTime min = m_widget->minDt(),
+            max = m_widget->maxDt();
+    GanttHeader::GanttPrecisionMode mode = m_scene->calculateTimeMode(min,max);
+
+    setMinValue(m_scene->startByDt(min,mode).toMicrosecondsSinceEpoch());
+    setMaxValue(m_scene->finishByDt(max,mode).toMicrosecondsSinceEpoch());
+}
+
+UtcDateTime GanttIntervalSlider::closestStartDtHelper(const UtcDateTime& valDt, GanttHeader::GanttPrecisionMode mode) const
+{
+    UtcDateTime start = m_scene->startByDt(valDt,mode),
+                nextStart = m_scene->nextStart(start,mode);
+
+//    qDebug() <<"start: "<<start;
+//    qDebug() <<"nextStart: "<<nextStart;
+//    qDebug() <<"mode: "<<QString::number(mode);
+
+
+    if(m_scene->calculateTimeMode(start,valToDt(endHandle())) != mode)
+        return nextStart;
+
+    if(valDt.toMicrosecondsSinceEpoch() - start.toMicrosecondsSinceEpoch()
+            > nextStart.toMicrosecondsSinceEpoch() - valDt.toMicrosecondsSinceEpoch() )
+        return nextStart;
+    else
+        return start;
+}
+
+UtcDateTime GanttIntervalSlider::closestFinishDtHelper(const UtcDateTime &valDt, GanttHeader::GanttPrecisionMode mode) const
+{
+    UtcDateTime finish = m_scene->finishByDt(valDt,mode),
+                prevFinish = m_scene->prevFinish(finish,mode);
+
+    if(m_scene->calculateTimeMode(valToDt(beginHandle()),prevFinish) != mode)
+        return finish;
 
     if(valDt.toMicrosecondsSinceEpoch() - prevFinish.toMicrosecondsSinceEpoch()
             > finish.toMicrosecondsSinceEpoch() - valDt.toMicrosecondsSinceEpoch() )
         return finish;
-    return prevFinish;
+    else
+        return prevFinish;
 }
 
 void GanttIntervalSlider::setCurrentTimeRectColor(const QColor &currentTimeRectColor)
 {
     m_currentTimeRectColor = currentTimeRectColor;
 
-    repaint();
+    update();
 }
 
 void GanttIntervalSlider::setCurrentTimePos(const qreal &currentTimePos)
 {
     m_currentTimePos = currentTimePos;
 
-    repaint();
+    update();
+}
+
+void GanttIntervalSlider::setCurrentTime(const UtcDateTime &dt)
+{
+    m_currentTime  = dt;
+
+    update();
+}
+
+void GanttIntervalSlider::checkLimits(const UtcDateTime &start, const UtcDateTime &finish)
+{
+    qDebug()<<"checkLimits";
+    if(!m_widget)
+    {
+        qDebug()<< "GanttIntervalSlider::checkLimits m_widget is NULL";
+        return;
+    }
+    bool needUpdate = false;
+    UtcDateTime resStart,resFinish;
+    if(start<m_widget->minDt())
+    {
+        needUpdate = true;
+        resStart = start;
+    }
+    else
+        resStart = m_widget->minDt();
+
+    if(finish<m_widget->maxDt())
+    {
+        needUpdate = true;
+        resFinish = finish;
+    }
+    else
+        resFinish = m_widget->maxDt();
+
+    if(needUpdate)
+        setLimits(dtToVal(start),dtToVal(finish));
 }
 
 
@@ -323,6 +444,6 @@ void GanttIntervalSlider::setCurrentTimeRectWidth(const qreal &currentTimeRectWi
 {
     m_currentTimeRectWidth = currentTimeRectWidth;
 
-    repaint();
+    update();
 }
 

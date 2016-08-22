@@ -92,6 +92,7 @@ void GanttGraphicsView::initialize()
     m_scene = NULL;
     m_treeView = NULL;
 
+    setMinimumWidth(GANTTGRAPHICSVIEW_MIN_WIDTH);
     setFrameStyle(0);
     setAlignment(Qt::AlignLeft | Qt::AlignTop);
     setHSliderHeight(15);

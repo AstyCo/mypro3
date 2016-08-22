@@ -19,6 +19,8 @@
 GanttScene::GanttScene(QObject * parent) :
     QGraphicsScene(parent)
 {
+    setSceneRect(0,0,GANTTSCENE_MIN_WIDTH,0);
+
     m_header = new GanttHeader;
     m_header->setScene(this);
     m_slider = new GanttSlider;
@@ -36,6 +38,9 @@ GanttScene::GanttScene(QObject * parent) :
 
 void GanttScene::updateWidth(int w)
 {
+    if(w < GANTTSCENE_MIN_WIDTH)
+        w = GANTTSCENE_MIN_WIDTH;
+
     setSceneRect(0,0,w,sceneRect().height());
 
     if(views().isEmpty())
@@ -80,11 +85,6 @@ void GanttScene::drawBackground(QPainter *painter, const QRectF &rect)
     }
 }
 
-void GanttScene::drawForeground(QPainter *painter, const QRectF &rect)
-{
-    QGraphicsScene::drawForeground(painter,rect);
-}
-
 void GanttScene::setMode(GanttHeader::GanttPrecisionMode newMode)
 {
     m_header->setMode(newMode);
@@ -125,14 +125,15 @@ void GanttScene::onViewResize(const QSize&newSize)
         m_header->setCurrentWidth(newSize.width());
         updateItems();
     }
-
     updateSliderRect();
+    emit viewResized();
+
 }
 
 void GanttScene::onViewAdded(QGraphicsView* view)
 {
     m_header->init();
-    onViewResize(view->viewport()->size());
+    onViewResize(view->size());
 }
 
 void GanttScene::setHeaderMode(GanttHeader::GanttHeaderMode mode)
@@ -157,6 +158,12 @@ void GanttScene::setHeaderMode(GanttHeader::GanttHeaderMode mode)
 
 GanttHeader::GanttHeaderMode GanttScene::headerMode() const
 {
+    if(!m_header)
+    {
+        Q_ASSERT(false);
+        return GanttHeader::GanttHeaderMode_count;
+    }
+
     return m_header->headerMode();
 }
 
@@ -324,6 +331,17 @@ qreal GanttScene::dtToX(const UtcDateTime &dt) const
     return m_header->dtToX(dt);
 }
 
+UtcDateTime GanttScene::startByDt(const UtcDateTime &dt,GanttHeader::GanttPrecisionMode mode) const
+{
+    if(!m_header)
+    {
+        Q_ASSERT(false);
+        return UtcDateTime();
+    }
+
+    return m_header->startByDt(dt,mode);
+}
+
 UtcDateTime GanttScene::startByDt(const UtcDateTime &dt) const
 {
     if(!m_header)
@@ -332,7 +350,18 @@ UtcDateTime GanttScene::startByDt(const UtcDateTime &dt) const
         return UtcDateTime();
     }
 
-    return m_header->startByDt(dt);
+    return startByDt(dt, m_header->mode());
+}
+
+UtcDateTime GanttScene::finishByDt(const UtcDateTime &dt,GanttHeader::GanttPrecisionMode mode) const
+{
+    if(!m_header)
+    {
+        Q_ASSERT(false);
+        return UtcDateTime();
+    }
+
+    return m_header->finishByDt(dt,mode);
 }
 
 UtcDateTime GanttScene::finishByDt(const UtcDateTime &dt) const
@@ -343,7 +372,18 @@ UtcDateTime GanttScene::finishByDt(const UtcDateTime &dt) const
         return UtcDateTime();
     }
 
-    return m_header->finishByDt(dt);
+    return finishByDt(dt, m_header->mode());
+}
+
+UtcDateTime GanttScene::nextStart(const UtcDateTime &dt,GanttHeader::GanttPrecisionMode mode) const
+{
+    if(!m_header)
+    {
+        Q_ASSERT(false);
+        return UtcDateTime();
+    }
+
+    return m_header->nextStart(dt,mode);
 }
 
 UtcDateTime GanttScene::nextStart(const UtcDateTime &dt) const
@@ -354,7 +394,18 @@ UtcDateTime GanttScene::nextStart(const UtcDateTime &dt) const
         return UtcDateTime();
     }
 
-    return m_header->nextStart(dt);
+    return nextStart(dt, m_header->mode());
+}
+
+UtcDateTime GanttScene::prevFinish(const UtcDateTime &dt,GanttHeader::GanttPrecisionMode mode) const
+{
+    if(!m_header)
+    {
+        Q_ASSERT(false);
+        return UtcDateTime();
+    }
+
+    return m_header->prevFinish(dt,mode);
 }
 
 UtcDateTime GanttScene::prevFinish(const UtcDateTime &dt) const
@@ -365,7 +416,32 @@ UtcDateTime GanttScene::prevFinish(const UtcDateTime &dt) const
         return UtcDateTime();
     }
 
-    return m_header->prevFinish(dt);
+    return prevFinish(dt, m_header->mode());
+}
+
+GanttHeader::GanttPrecisionMode GanttScene::headerPrecisionMode() const
+{
+    if(!m_header)
+    {
+        qDebug() << "GanttScene::headerMode m_header is NULL";
+        return (GanttHeader::GanttPrecisionMode)0;
+    }
+    return m_header->mode();
+}
+
+GanttHeader::GanttPrecisionMode GanttScene::calculateTimeMode(const UtcDateTime &min, const UtcDateTime &max) const
+{
+    if(!m_header)
+    {
+        qDebug() << "GanttScene::calculateTimeMode m_header is NULL";
+        return (GanttHeader::GanttPrecisionMode)0;
+    }
+    return m_header->calculateTimeMode(min,max);
+}
+
+void GanttScene::emitLimitsChanged(const UtcDateTime &start, const UtcDateTime &finish)
+{
+    emit limitsChanged(start,finish);
 }
 
 void GanttScene::updateSliderRect()

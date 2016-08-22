@@ -139,8 +139,10 @@ void GanttSlider::updateScenePos()
 
 void GanttSlider::updateRange(const UtcDateTime &minDt, const UtcDateTime &maxDt)
 {
-    m_minDt = minDt;
-    m_maxDt = maxDt;
+    GanttHeader::GanttPrecisionMode mode = m_scene->calculateTimeMode(minDt,maxDt);
+
+    m_minDt = m_scene->startByDt(minDt,mode);
+    m_maxDt = m_scene->finishByDt(maxDt,mode);
 
     emit relativePosChanged(relativePos());
 }
@@ -185,6 +187,7 @@ void GanttSlider::setDt(const UtcDateTime &dt)
 
     if(sender())
         setPos((m_dt.isValid())?(m_scene->dtToX(m_dt)):(m_slidersRect.left()),scenePos().y());
+
     emit dtChanged(dt);
     emit relativePosChanged(relativePos());
 }

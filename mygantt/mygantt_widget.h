@@ -43,18 +43,16 @@ private slots:
     void collapsed(const QModelIndex& index);
 
 
-
     void onSliderMoved();
 
-
     void on_pushButton_slider_clicked();
-
     void on_pushButton_header_clicked();
 
 public slots:
     void repaintDtHeader();
 
     void updateRange();
+    void updateSliderLimits();
 
 private:
     void updatePos(GanttInfoNode* from);

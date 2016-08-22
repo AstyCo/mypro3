@@ -67,7 +67,7 @@ public:
 
     void updateHeader();
 
-    GanttPrecisionMode mode() const;
+    const GanttPrecisionMode &mode() const;
     void setMode(const GanttPrecisionMode &mode);
 
     void onItemsAddition(const QList<GanttInfoItem*>& items);
@@ -106,12 +106,18 @@ public:
 
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-    void calculateTimeMode();
+    GanttPrecisionMode calculateTimeMode(const UtcDateTime &min, const UtcDateTime &max);
     void initRange();
+    UtcDateTime startByDt(const UtcDateTime& dt,GanttPrecisionMode mode) const;
     UtcDateTime startByDt(const UtcDateTime& dt) const;
+
+    UtcDateTime finishByDt(const UtcDateTime& dt,GanttPrecisionMode mode) const;
     UtcDateTime finishByDt(const UtcDateTime& dt) const;
 
+    UtcDateTime nextStart(const UtcDateTime& start,GanttPrecisionMode mode) const;
     UtcDateTime nextStart(const UtcDateTime& start) const;
+
+    UtcDateTime prevFinish(const UtcDateTime& finish,GanttPrecisionMode mode) const;
     UtcDateTime prevFinish(const UtcDateTime& finish) const;
 
 
@@ -121,12 +127,16 @@ public:
     static bool isDrawn(const UtcDateTime& dt, GanttPrecisionMode mode);
     static QString formatForMode(GanttPrecisionMode mode);
 
+
 private:
 
     bool onItemsAdditionHelper(GanttInfoItem* item);
     QString textForDtStep(int step_segment) const;
-
     void updateWidget();
+
+    void updateVisItemCount();
+    qreal getCoef(const UtcDateTime &min, const UtcDateTime &max) const;
+    void updateStretchFactor();
 
 
 private:
@@ -146,6 +156,7 @@ private:
                   m_maxDt;
 
     long long m_lengthInMicroseconds;
+    int m_visItemCount;
 
     GanttPrecisionMode m_mode;
 

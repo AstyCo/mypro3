@@ -24,11 +24,7 @@ public:
     void updateWidth(int w);
     void updateHeight(int h);
 
-    void drawBackground(QPainter *painter, const QRectF &rect); ///< Задник план содержит сетку
-
-
-
-    void drawForeground(QPainter *painter, const QRectF &rect); ///< Перендий план содержит шапку
+    void drawBackground(QPainter *painter, const QRectF &rect); ///< Задний план содержит сетку
 
     void setMode(GanttHeader::GanttPrecisionMode newMode);
 
@@ -63,12 +59,26 @@ public:
     UtcDateTime xToDt(qreal x) const;
     qreal dtToX(const UtcDateTime& dt) const;
 
+    UtcDateTime startByDt(const UtcDateTime& dt,GanttHeader::GanttPrecisionMode mode) const;
     UtcDateTime startByDt(const UtcDateTime& dt) const;
+
+    UtcDateTime finishByDt(const UtcDateTime& dt,GanttHeader::GanttPrecisionMode mode) const;
     UtcDateTime finishByDt(const UtcDateTime& dt) const;
 
+    UtcDateTime nextStart(const UtcDateTime& dt,GanttHeader::GanttPrecisionMode mode) const;
     UtcDateTime nextStart(const UtcDateTime& dt) const;
+
+    UtcDateTime prevFinish(const UtcDateTime& dt,GanttHeader::GanttPrecisionMode mode) const;
     UtcDateTime prevFinish(const UtcDateTime& dt) const;
 
+    GanttHeader::GanttPrecisionMode headerPrecisionMode() const;
+    GanttHeader::GanttPrecisionMode calculateTimeMode(const UtcDateTime &min, const UtcDateTime &max) const;
+
+    void emitLimitsChanged(const UtcDateTime &start, const UtcDateTime &finish);
+
+signals:
+    void limitsChanged(const UtcDateTime &start, const UtcDateTime &finish);
+    void viewResized();
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);

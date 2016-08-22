@@ -22,7 +22,7 @@ GanttHeader::GanttHeader(QGraphicsItem *parent) :
     m_scene = NULL;
     m_widget = NULL;
 
-    m_mode = months1;
+    m_mode = GanttPrecisionMode_count;
     setHeaderMode(TimelineMode);
     m_currentWidth = 0;
     m_stretchFactor = 1;
@@ -41,11 +41,12 @@ void GanttHeader::setScene(QGraphicsScene *scene)
         qWarning("GanttHeader::setScene no m_scene");
         return;
     }
-
+    m_visItemCount = (m_scene->width() - MIN_WIDTH_FOR_TIME_VISUALIZING) / MIN_WIDTH_FOR_TIME_VISUALIZING;
     m_widget = dynamic_cast<GanttWidget*>(m_scene->parent());
 
     init();
     m_scene->addItem(this);
+
     updateHeader();
 }
 
@@ -159,14 +160,17 @@ void GanttHeader::updateHeader()
     }
     else if(m_headerMode == TimelineMode)
     {
-        calculateTimeMode();
+        GanttPrecisionMode newMode = calculateTimeMode(m_minDt,m_maxDt);
+        if(newMode != m_mode)
+        {
+            m_mode = newMode;
+            updateStretchFactor();
+        }
         initRange();
-
-
     }
 }
 
-GanttHeader::GanttPrecisionMode GanttHeader::mode() const
+const GanttHeader::GanttPrecisionMode &GanttHeader::mode() const
 {
     return m_mode;
 }
@@ -219,11 +223,11 @@ void GanttHeader::initRange()
         m_widget->repaintDtHeader();
 }
 
-UtcDateTime GanttHeader::startByDt(const UtcDateTime &dt) const
+UtcDateTime GanttHeader::startByDt(const UtcDateTime &dt,GanttPrecisionMode mode) const
 {
     if(m_headerMode == GanttDiagramMode)
     {
-        switch(m_mode)
+        switch(mode)
         {
         case seconds1:
             return UtcDateTime(QDate(dt.year(),dt.month(),dt.day()),QTime(dt.hour(),dt.minute()));
@@ -241,7 +245,7 @@ UtcDateTime GanttHeader::startByDt(const UtcDateTime &dt) const
     }
     else if(m_headerMode == TimelineMode)
     {
-        switch(m_mode)
+        switch(mode)
         {
         case seconds1:
             return dt.dateTime();
@@ -301,11 +305,16 @@ UtcDateTime GanttHeader::startByDt(const UtcDateTime &dt) const
     return UtcDateTime();
 }
 
-UtcDateTime GanttHeader::finishByDt(const UtcDateTime &dt) const
+UtcDateTime GanttHeader::startByDt(const UtcDateTime &dt) const
+{
+    return startByDt(dt,m_mode);
+}
+
+UtcDateTime GanttHeader::finishByDt(const UtcDateTime &dt,GanttPrecisionMode mode) const
 {
     if(m_headerMode == GanttDiagramMode)
     {
-        switch(m_mode)
+        switch(mode)
         {
         case seconds1:
             return UtcDateTime(
@@ -335,7 +344,7 @@ UtcDateTime GanttHeader::finishByDt(const UtcDateTime &dt) const
     }
     else if(m_headerMode == TimelineMode)
     {
-        switch(m_mode)
+        switch(mode)
         {
         case seconds1:
             return UtcDateTime(
@@ -477,7 +486,12 @@ UtcDateTime GanttHeader::finishByDt(const UtcDateTime &dt) const
     return UtcDateTime();
 }
 
-UtcDateTime GanttHeader::nextStart(const UtcDateTime &start) const
+UtcDateTime GanttHeader::finishByDt(const UtcDateTime &dt) const
+{
+    return finishByDt(dt,m_mode);
+}
+
+UtcDateTime GanttHeader::nextStart(const UtcDateTime &start,GanttPrecisionMode mode) const
 {
     if(!m_widget)
     {
@@ -487,7 +501,7 @@ UtcDateTime GanttHeader::nextStart(const UtcDateTime &start) const
 
     if(m_headerMode == GanttDiagramMode)
     {
-        switch(m_mode)
+        switch(mode)
         {
         case seconds1:
         {
@@ -530,7 +544,7 @@ UtcDateTime GanttHeader::nextStart(const UtcDateTime &start) const
     }
     else if(m_headerMode == TimelineMode)
     {
-        switch(m_mode)
+        switch(mode)
         {
         case seconds1:
         {
@@ -631,7 +645,12 @@ UtcDateTime GanttHeader::nextStart(const UtcDateTime &start) const
     return start;
 }
 
-UtcDateTime GanttHeader::prevFinish(const UtcDateTime &finish) const
+UtcDateTime GanttHeader::nextStart(const UtcDateTime &start) const
+{
+    return nextStart(start,m_mode);
+}
+
+UtcDateTime GanttHeader::prevFinish(const UtcDateTime &finish,GanttPrecisionMode mode) const
 {
     if(!m_widget)
     {
@@ -641,7 +660,7 @@ UtcDateTime GanttHeader::prevFinish(const UtcDateTime &finish) const
 
     if(m_headerMode == GanttDiagramMode)
     {
-        switch(m_mode)
+        switch(mode)
         {
         case seconds1:
         {
@@ -684,7 +703,7 @@ UtcDateTime GanttHeader::prevFinish(const UtcDateTime &finish) const
     }
     else if(m_headerMode == TimelineMode)
     {
-        switch(m_mode)
+        switch(mode)
         {
         case seconds1:
         {
@@ -783,6 +802,11 @@ UtcDateTime GanttHeader::prevFinish(const UtcDateTime &finish) const
         }
     }
     return finish;
+}
+
+UtcDateTime GanttHeader::prevFinish(const UtcDateTime &finish) const
+{
+    return prevFinish(finish,m_mode);
 }
 
 QString GanttHeader::topHeaderFormat(GanttHeader::GanttPrecisionMode mode)
@@ -935,8 +959,6 @@ bool GanttHeader::onItemsAdditionHelper(GanttInfoItem *item)
         }
     }
 
-    setLengthInMicroseconds(m_minDt.microsecondsTo(m_maxDt));
-
     return newRange;
 }
 
@@ -1007,6 +1029,23 @@ void GanttHeader::updateWidget()
     m_widget->updateRange();
 }
 
+void GanttHeader::updateVisItemCount()
+{
+    m_visItemCount = (m_currentWidth-MIN_WIDTH_FOR_TIME_VISUALIZING)/MIN_WIDTH_FOR_TIME_VISUALIZING;
+}
+
+qreal GanttHeader::getCoef(const UtcDateTime &min, const UtcDateTime &max) const
+{
+    return (min.microsecondsTo(max) * 1.0 / (m_visItemCount-2));
+}
+
+void GanttHeader::updateStretchFactor()
+{
+    m_stretchFactor = modeToMicrosecond(m_mode) * 1.0 / getCoef(m_startDt,m_finishDt);
+}
+
+
+
 const UtcDateTime &GanttHeader::maxDt() const
 {
     return m_maxDt;
@@ -1045,9 +1084,6 @@ void GanttHeader::setRange(UtcDateTime min, UtcDateTime max)
 {
     if(min>max)
         return;
-
-//    qDebug() << "GanttHeader::setRange "
-//             << min <<' ' <<max;
 
     m_minDt = min;
     m_maxDt = max;
@@ -1255,8 +1291,10 @@ void GanttHeader::setCurrentWidth(int currentWidth)
     if(m_currentWidth == currentWidth)
         return;
     m_currentWidth = currentWidth;
+    updateVisItemCount();
 
     updateHeader();
+
 }
 
 GanttHeader::GanttHeaderMode GanttHeader::headerMode() const
@@ -1264,15 +1302,12 @@ GanttHeader::GanttHeaderMode GanttHeader::headerMode() const
     return m_headerMode;
 }
 
-void GanttHeader::calculateTimeMode()
+GanttHeader::GanttPrecisionMode GanttHeader::calculateTimeMode(const UtcDateTime &min, const UtcDateTime &max)
 {
-    if(m_isEmpty)
-        return;
-    if(m_currentWidth < MIN_WIDTH_FOR_TIME_VISUALIZING)
-        return;
+    if(m_isEmpty || m_headerMode != TimelineMode || m_currentWidth < MIN_WIDTH_FOR_TIME_VISUALIZING)
+        return (GanttPrecisionMode)0;
 
-
-    long long coef = (m_minDt.microsecondsTo(m_maxDt)*1.0/((m_currentWidth-MIN_WIDTH_FOR_TIME_VISUALIZING)/MIN_WIDTH_FOR_TIME_VISUALIZING));
+    qreal coef = (min.microsecondsTo(max)*1.0/ (m_visItemCount-2));
 
     GanttPrecisionMode mode = GanttPrecisionMode_count;
 
@@ -1289,28 +1324,16 @@ void GanttHeader::calculateTimeMode()
     if(mode == GanttPrecisionMode_count)
     {
         qDebug() << "GanttHeader::calculateTimeMode() out of range";
-        return;
+
+        qDebug() << "min: " << min << "max: "<< max;
+        qDebug() << "visItemCount:" << QString::number(m_visItemCount);
+
+        return (GanttPrecisionMode)0;
     }
 
-    if(m_mode != mode)
-    {
-        m_mode = mode;
-        initRange();
-    }
+//    qDebug() <<"visItemCount: "<< QString::number(m_visItemCount);
 
-    qreal newCoef = (m_startDt.microsecondsTo(m_finishDt)*1.0/((m_currentWidth-MIN_WIDTH_FOR_TIME_VISUALIZING)/MIN_WIDTH_FOR_TIME_VISUALIZING));
-
-    if(newCoef> modeToMicrosecond(m_mode))
-    {
-        qDebug() << "newCoeff doesn\'t fit";
-        m_mode = (mode)?((GanttPrecisionMode)((int)mode - 1)):((GanttPrecisionMode)0);
-        initRange();
-        newCoef = (m_startDt.microsecondsTo(m_finishDt)*1.0/((m_currentWidth-MIN_WIDTH_FOR_TIME_VISUALIZING)/MIN_WIDTH_FOR_TIME_VISUALIZING));
-
-    }
-
-
-    m_stretchFactor = modeToMicrosecond(m_mode) * 1.0 / newCoef;
+    return mode;
 }
 
 bool GanttHeader::setHeaderMode(const GanttHeaderMode &headerMode)
@@ -1369,7 +1392,6 @@ void GanttHeader::init()
     }
     else if(m_headerMode == TimelineMode)
     {
-        p_view->setMinimumWidth(GANTTGRAPHICSVIEW_MIN_WIDTH);
         p_view->setMaximumWidth(100000);
         p_view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     }
