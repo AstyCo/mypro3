@@ -312,15 +312,17 @@ void GanttWidget::updateRange()
 
     if(m_scene->m_slider)
     {
+        m_scene->m_slider->updateRange(m_minDt,m_maxDt);
         if(!m_scene->m_slider->initialized())
             m_scene->m_slider->setDt(m_minDt);
-        m_scene->m_slider->updateRange(m_minDt,m_maxDt);
     }
     updateSliderLimits();
 }
 
 void GanttWidget::updateSliderLimits()
 {
+    qDebug() << "GanttWidget::updateSliderLimits";
+
     GanttHeader::GanttPrecisionMode mode = m_scene->calculateTimeMode(m_minDt,m_maxDt);
 
     ui->intervalSlider->setLimits(m_scene->startByDt(m_minDt,mode).toMicrosecondsSinceEpoch(),

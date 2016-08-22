@@ -36,6 +36,9 @@ public:
 
     UtcDateTime maxDt() const;
 
+signals:
+    void currentDtChanged(const UtcDateTime& dt);
+
 private slots:
     void on_comboBox_mode_currentIndexChanged(int index);
 

@@ -45,13 +45,14 @@ signals:
     void dtChanged(UtcDateTime dt);
 
 public slots:
-    void setDt(const UtcDateTime &dt);
+    void setDt(UtcDateTime dt);
     void updateScenePos();
     void updateRange(const UtcDateTime& minDt, const UtcDateTime& maxDt);
 
 private:
 
-    bool outOfRange();
+    bool outOfRange() const;
+    bool outOfBonds(const UtcDateTime &dt) const;
 
 private:
     QRectF m_slidersRect; ///< The rectangle, where slider can actually move.

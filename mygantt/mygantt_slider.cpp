@@ -141,13 +141,13 @@ void GanttSlider::updateRange(const UtcDateTime &minDt, const UtcDateTime &maxDt
 {
     GanttHeader::GanttPrecisionMode mode = m_scene->calculateTimeMode(minDt,maxDt);
 
-    m_minDt = m_scene->startByDt(minDt,mode);
-    m_maxDt = m_scene->finishByDt(maxDt,mode);
+    m_minDt = minDt/*m_scene->startByDt(minDt,mode)*/;
+    m_maxDt = maxDt/*m_scene->finishByDt(maxDt,mode)*/;
 
     emit relativePosChanged(relativePos());
 }
 
-bool GanttSlider::outOfRange()
+bool GanttSlider::outOfRange() const
 {
     if(!m_scene)
     {
@@ -156,6 +156,11 @@ bool GanttSlider::outOfRange()
     }
 
     return !(m_dt.isValid()) || m_dt < m_scene->startDt() || m_dt > m_scene->finishDt();
+}
+
+bool GanttSlider::outOfBonds(const UtcDateTime &dt) const
+{
+    return (dt<m_minDt || dt>m_maxDt);
 }
 
 bool GanttSlider::initialized() const
@@ -172,8 +177,18 @@ qreal GanttSlider::relativePos() const
     return 0;
 }
 
-void GanttSlider::setDt(const UtcDateTime &dt)
+void GanttSlider::setDt(UtcDateTime dt)
 {
+
+    if(dt < m_minDt)
+        dt = m_minDt;
+    if(dt > m_maxDt)
+        dt = m_maxDt;
+
+    if(dt == m_dt)
+        return;
+//    qDebug() <<"GanttSlider::setDt "<< dt;
+
     m_dt = dt;
 
     if(!m_initialized)

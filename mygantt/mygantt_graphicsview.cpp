@@ -86,9 +86,6 @@ void GanttGraphicsView::leaveEvent(QEvent *e)
 
 void GanttGraphicsView::initialize()
 {
-//    setRenderHint(QPainter::Antialiasing,true);
-//    setRenderHint(QPainter::TextAntialiasing,false);
-
     m_scene = NULL;
     m_treeView = NULL;
 

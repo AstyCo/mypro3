@@ -45,19 +45,19 @@ void GanttIntervalSlider::drawHandle(QPainter *painter, const QRect &handleRect,
 {
     painter->setPen(Qt::black);
 
-    qDebug() <<"handleSize(): "<<QString::number(handleSize());
-    qDebug() <<"halfHandleSize(): "<<QString::number(halfHandleSize());
+//    qDebug() <<"handleSize(): "<<QString::number(handleSize());
+//    qDebug() <<"halfHandleSize(): "<<QString::number(halfHandleSize());
 
-    qDebug() << "handleRect: "<<handleRect;
+//    qDebug() << "handleRect: "<<handleRect;
 
     qreal penWidth = 0;
     QColor color = (is_selected)?(Qt::black):(QColor(Qt::blue));
-    QPen pen(color,penWidth,Qt::SolidLine,Qt::SquareCap,Qt::MiterJoin);
+    QPen pen(Qt::black,penWidth,Qt::SolidLine,Qt::SquareCap,Qt::MiterJoin);
     painter->setPen(pen);
 //    painter->setRenderHint(QPainter::Antialiasing,true);
 
     painter->setBrush(QBrush(color));
-    painter->drawRoundedRect(handleRect.adjusted(penWidth,penWidth,-penWidth,-penWidth)
+    painter->drawRoundedRect(handleRect.adjusted(1,1,-1,-1)
                              ,1,1);
 
 
@@ -66,7 +66,7 @@ void GanttIntervalSlider::drawHandle(QPainter *painter, const QRect &handleRect,
 
 void GanttIntervalSlider::drawSliderLine(QPainter *painter, const QRect &sliderRect) const
 {
-    qDebug() << "sliderRect: "<<sliderRect;
+//    qDebug() << "sliderRect: "<<sliderRect;
 
     int top = sliderRect.y() + m_offsetV,
             width = sliderRect.width() - handleSize();
@@ -124,15 +124,22 @@ void GanttIntervalSlider::drawSliderLine(QPainter *painter, const QRect &sliderR
 
     // DRAW CURRENT TIME
     QRect currentTimeRect(/*m_currentTimePos * width*//*beginRectLeft +*/ valueToPoint(dtToVal(m_currentTime),NoHandle)
-                          - (m_currentTimeRectWidth+2)/2,
+                          - (m_currentTimeRectWidth)/2,
                           sliderRect.y(),
                           m_currentTimeRectWidth,
                           intervalSliderHeight()
                           );
 
-    painter->drawRect(currentTimeRect);
-    painter->fillRect(currentTimeRect, m_currentTimeRectColor);
 
+//    qDebug() <<"cdtPoint: " << QString::number(valueToPoint(dtToVal(m_currentTime),NoHandle));
+//    qDebug() <<"beginDtPoint: " << QString::number(valueToPoint(dtToVal(beginDt()),BeginHandle));
+//    qDebug() <<"endDtPoint: " << QString::number(valueToPoint(dtToVal(endDt()),EndHandle));
+
+//    qDebug() <<"currentTimeRect: " << currentTimeRect;
+
+    painter->setPen(Qt::black);
+    painter->setBrush(QBrush(m_currentTimeRectColor));
+    painter->drawRect(currentTimeRect.adjusted(0,0,0,-1));
 }
 
 void GanttIntervalSlider::mouseMoveEvent(QMouseEvent *e)
@@ -330,6 +337,11 @@ UtcDateTime GanttIntervalSlider::endDt() const
     return valToDt(endHandle());
 }
 
+void GanttIntervalSlider::setLimits(long long minValue, long long maxValue)
+{
+    IntervalSlider::setLimits(minValue,maxValue);
+}
+
 void GanttIntervalSlider::updateRange()
 {
     if(!m_scene)
@@ -399,12 +411,16 @@ void GanttIntervalSlider::setCurrentTimePos(const qreal &currentTimePos)
 {
     m_currentTimePos = currentTimePos;
 
+
+
     update();
 }
 
 void GanttIntervalSlider::setCurrentTime(const UtcDateTime &dt)
 {
     m_currentTime  = dt;
+
+//    qDebug() << "curDt: "<< dt;
 
     update();
 }

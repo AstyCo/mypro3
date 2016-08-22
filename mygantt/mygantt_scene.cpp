@@ -96,6 +96,10 @@ void GanttScene::addItems(GanttInfoItem* item)
 {
     m_header->onItemsAddition(item);
     addItemsHelper(item);
+
+    QRectF _sceneRect = sceneRect();
+    setSceneRect(_sceneRect.x(),_sceneRect.y(),_sceneRect.width()
+                 ,_sceneRect.height() + DEFAULT_ITEM_HEIGHT);
 }
 
 void GanttScene::addItems(const QList<GanttInfoItem *> &items)
@@ -104,6 +108,10 @@ void GanttScene::addItems(const QList<GanttInfoItem *> &items)
 
     foreach(GanttInfoItem* item, items)
         addItemsHelper(item);
+
+    QRectF _sceneRect = sceneRect();
+    setSceneRect(_sceneRect.x(),_sceneRect.y(),_sceneRect.width()
+                 ,_sceneRect.height() + items.count() * DEFAULT_ITEM_HEIGHT);
 }
 
 GanttItem *GanttScene::itemByInfo(const GanttInfoLeaf * key) const

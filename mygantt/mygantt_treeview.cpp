@@ -60,12 +60,21 @@ void GanttTreeView::scrollContentsBy(int dx, int dy)
 void GanttTreeView::mouseMoveEvent(QMouseEvent *event)
 {
     QPoint pos = event->pos();
-    if(rect().contains(pos) && pos.y() > rect().bottom() - header()->height() - m_hSliderHeight)
+
+    qDebug() << "rect: "<<rect();
+    qDebug() << "pos: "<< pos;
+    qDebug() << "header: "<<QString::number(header()->height());
+qDebug() << "m_hSliderHeight: "<< m_hSliderHeight;
+
+    if( pos.y() > rect().bottom() - header()->height() - m_hSliderHeight)
     {
+        qDebug() << '+';
         setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+        update();
     }
     else
     {
+         qDebug() << '-';
         setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     }
     QTreeView::mouseMoveEvent(event);
@@ -79,6 +88,7 @@ void GanttTreeView::leaveEvent(QEvent *e)
 }
 void GanttTreeView::setGraphicsView(GanttGraphicsView *graphicsView)
 {
+
     m_graphicsView = graphicsView;
 }
 

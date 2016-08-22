@@ -32,7 +32,7 @@ public:
     UtcDateTime beginDt() const;
     UtcDateTime endDt() const;
 
-
+    void setLimits(long long minValue, long long maxValue);
 
 
 private:
