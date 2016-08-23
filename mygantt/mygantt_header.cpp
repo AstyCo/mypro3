@@ -22,7 +22,7 @@ GanttHeader::GanttHeader(QGraphicsItem *parent) :
     m_scene = NULL;
     m_widget = NULL;
 
-    m_mode = GanttPrecisionMode_count;
+    setMode(GanttPrecisionMode_count);
     setHeaderMode(TimelineMode);
     m_currentWidth = 0;
     m_stretchFactor = 1;
@@ -78,6 +78,8 @@ void GanttHeader::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
         qreal curOffset = MIN_WIDTH_FOR_TIME_VISUALIZING/2;
 
         UtcDateTime dt = m_startDt;
+
+        qDebug() <<"paint m_mode: "<<QString::number(m_mode);
 
         do
         {
@@ -161,9 +163,8 @@ void GanttHeader::updateHeader()
     else if(m_headerMode == TimelineMode)
     {
         GanttPrecisionMode newMode = calculateTimeMode(m_minDt,m_maxDt);
-        if(newMode != m_mode)
+        if(setMode(newMode))
         {
-            m_mode = newMode;
             updateStretchFactor();
         }
         initRange();
@@ -175,16 +176,15 @@ const GanttHeader::GanttPrecisionMode &GanttHeader::mode() const
     return m_mode;
 }
 
-void GanttHeader::setMode(const GanttPrecisionMode &mode)
+bool GanttHeader::setMode(const GanttPrecisionMode &mode)
 {
-    if(m_mode == mode)
-        return;
+    if(m_mode == mode || m_headerMode != TimelineMode)
+        return false;
 
-    if(m_headerMode == TimelineMode)
-        return;
-
+    qDebug()<< "setMode: "<<QString::number(mode);
     m_mode = mode;
     updateHeader();
+    return true;
 }
 
 void GanttHeader::onItemsAddition(const QList<GanttInfoItem *> &items)
@@ -298,7 +298,7 @@ UtcDateTime GanttHeader::startByDt(const UtcDateTime &dt,GanttPrecisionMode mode
         case months1:
             return UtcDateTime(QDate(dt.year(),dt.month(),1));
         default:
-            qDebug() <<"GanttHeader::initRange() out of range";
+            qWarning("GanttHeader::initRange() out of range");
             return UtcDateTime();
         }
     }
@@ -479,7 +479,7 @@ UtcDateTime GanttHeader::finishByDt(const UtcDateTime &dt,GanttPrecisionMode mod
             return res;
         }
         default:
-            qDebug() <<"GanttHeader::initRange() out of range";
+            qWarning("GanttHeader::initRange() out of range");
             return UtcDateTime();
         }
     }
@@ -495,7 +495,7 @@ UtcDateTime GanttHeader::nextStart(const UtcDateTime &start,GanttPrecisionMode m
 {
     if(!m_widget)
     {
-        qDebug() << "GanttHeader::nextStart : NULL GanttWidget*";
+        qWarning("GanttHeader::nextStart : NULL GanttWidget*");
         return start;
     }
 
@@ -638,7 +638,7 @@ UtcDateTime GanttHeader::nextStart(const UtcDateTime &start,GanttPrecisionMode m
             return res;
         }
         default:
-            qDebug() <<"GanttHeader::nextStart out of range";
+            qWarning("GanttHeader::nextStart out of range");
             return start;
         }
     }
@@ -654,7 +654,7 @@ UtcDateTime GanttHeader::prevFinish(const UtcDateTime &finish,GanttPrecisionMode
 {
     if(!m_widget)
     {
-        qDebug() << "GanttHeader::prevFinish : NULL GanttWidget*";
+        qWarning("GanttHeader::prevFinish : NULL GanttWidget*");
         return finish;
     }
 
@@ -797,7 +797,7 @@ UtcDateTime GanttHeader::prevFinish(const UtcDateTime &finish,GanttPrecisionMode
             return res;
         }
         default:
-            qDebug() <<"GanttHeader::prevFinish out of range";
+            qWarning("GanttHeader::prevFinish out of range");
             return finish;
         }
     }
@@ -986,7 +986,7 @@ QString GanttHeader::formatForMode(GanttHeader::GanttPrecisionMode mode)
     case months1:
         return "MMM";
     default:
-        qDebug() << "GanttHeader::formatForMode out of range";
+        qWarning("GanttHeader::formatForMode out of range");
         return QString();
     }
 }
@@ -1015,7 +1015,7 @@ QString GanttHeader::textForDtStep(int step) const
     case months1:
         return m_startDt.addMonths(step).toString("MMM");
     default:
-        qDebug() <<"GanttHeader::textForDtStep out of range";
+        qWarning("GanttHeader::textForDtStep out of range");
        return QString();
     }
     return QString();
@@ -1036,7 +1036,7 @@ void GanttHeader::updateVisItemCount()
 
 qreal GanttHeader::getCoef(const UtcDateTime &min, const UtcDateTime &max) const
 {
-    return (min.microsecondsTo(max) * 1.0 / (m_visItemCount-2));
+    return (min.microsecondsTo(max) * 1.0 / (m_visItemCount));
 }
 
 void GanttHeader::updateStretchFactor()
@@ -1097,7 +1097,7 @@ bool GanttHeader::verifyBoundsByLeaf(const GanttInfoLeaf *leaf)
         return false;
     if(!leaf->start().isValid() || !leaf->finish().isValid())
     {
-        qDebug()<< "Leaf\'s time not valid!";
+        qWarning("Leaf\'s time not valid!");
         return false;
     }
 
@@ -1163,7 +1163,7 @@ long long GanttHeader::modeToMicrosecond(GanttPrecisionMode mode, const QDate& d
             return 28*((long long)SECONDS_IN_DAY)*_MICROSECONDS_IN_SECOND;
         return date.daysInMonth()*((long long)SECONDS_IN_DAY)*_MICROSECONDS_IN_SECOND;
     default:
-        qDebug() <<"long long GanttHeader::modeToMicrosecond(GanttHeader::GanttHeaderMode mode) out of range";
+        qWarning("long long GanttHeader::modeToMicrosecond(GanttHeader::GanttHeaderMode mode) out of range");
         return 0;
     }
 }
@@ -1201,7 +1201,7 @@ long long GanttHeader::modeToSecond(GanttHeader::GanttPrecisionMode mode, const 
             return 28*((long long)SECONDS_IN_DAY);
         return date.daysInMonth()*((long long)SECONDS_IN_DAY);
     default:
-        qDebug() <<"GanttHeader::modeToSecond out of range";
+        qWarning("GanttHeader::modeToSecond out of range");
         return 0;
     }
 }
@@ -1239,7 +1239,7 @@ int GanttHeader::modeToSegmentCount(GanttHeader::GanttPrecisionMode mode, const 
             return 6;
         return date.daysInMonth();
     default:
-        qDebug() <<"GanttHeader::modeToSecond out of range";
+        qWarning("GanttHeader::modeToSecond out of range");
         return 0;
     }
 }
@@ -1248,7 +1248,7 @@ bool GanttHeader::isDrawn(const UtcDateTime &dt, GanttHeader::GanttPrecisionMode
 {
     if(!dt.isValid())
     {
-        qDebug() << "GanttHeader::isDrawn dt is not valid";
+        qWarning("GanttHeader::isDrawn dt is not valid");
         return false;
     }
 
@@ -1281,7 +1281,7 @@ bool GanttHeader::isDrawn(const UtcDateTime &dt, GanttHeader::GanttPrecisionMode
     case months1:
         return !(dt.day() - 1);
     default:
-        qDebug() <<"GanttHeader::isDrawn out of range";
+        qWarning("GanttHeader::isDrawn out of range");
         return false;
     }
 }
@@ -1307,26 +1307,30 @@ GanttHeader::GanttPrecisionMode GanttHeader::calculateTimeMode(const UtcDateTime
     if(m_isEmpty || m_headerMode != TimelineMode || m_currentWidth < MIN_WIDTH_FOR_TIME_VISUALIZING)
         return (GanttPrecisionMode)0;
 
-    qreal coef = (min.microsecondsTo(max)*1.0/ (m_visItemCount-2));
+    qreal coef = (min.microsecondsTo(max)*1.0/ (m_visItemCount));
 
     GanttPrecisionMode mode = GanttPrecisionMode_count;
 
     for(int i = GanttPrecisionMode_count-1; i >= 0; --i)
     {
         GanttPrecisionMode i_mode = static_cast<GanttPrecisionMode>(i);
-        if(coef < modeToMicrosecond(i_mode))
+        qDebug() <<"coef: "<<QString::number(coef)
+                <<"\nmodesec: "<<QString::number(modeToMicrosecond(i_mode));
+        if(coef <= modeToMicrosecond(i_mode))
         {
             mode = i_mode;
             break;
         }
     }
 
+    qDebug() <<"mode: "<<QString::number(mode);
+
     if(mode == GanttPrecisionMode_count)
     {
-        qDebug() << "GanttHeader::calculateTimeMode() out of range";
+        qWarning("GanttHeader::calculateTimeMode() out of range");
 
-        qDebug() << "min: " << min << "max: "<< max;
-        qDebug() << "visItemCount:" << QString::number(m_visItemCount);
+//        qDebug() << "min: " << min << "max: "<< max;
+//        qDebug() << "visItemCount:" << QString::number(m_visItemCount);
 
         return (GanttPrecisionMode)0;
     }

@@ -28,7 +28,8 @@ void GanttGraphicsView::resizeEvent(QResizeEvent *event)
 
     if(!m_scene)
         return;
-    m_scene->onViewResize(event->size());
+
+    emit viewResized(event->size());
 }
 
 void GanttGraphicsView::scrollContentsBy(int dx, int dy)

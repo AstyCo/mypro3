@@ -61,20 +61,20 @@ void GanttTreeView::mouseMoveEvent(QMouseEvent *event)
 {
     QPoint pos = event->pos();
 
-    qDebug() << "rect: "<<rect();
-    qDebug() << "pos: "<< pos;
-    qDebug() << "header: "<<QString::number(header()->height());
-qDebug() << "m_hSliderHeight: "<< m_hSliderHeight;
+//    qDebug() << "rect: "<<rect();
+//    qDebug() << "pos: "<< pos;
+//    qDebug() << "header: "<<QString::number(header()->height());
+//qDebug() << "m_hSliderHeight: "<< m_hSliderHeight;
 
     if( pos.y() > rect().bottom() - header()->height() - m_hSliderHeight)
     {
-        qDebug() << '+';
+//        qDebug() << '+';
         setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
         update();
     }
     else
     {
-         qDebug() << '-';
+//         qDebug() << '-';
         setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     }
     QTreeView::mouseMoveEvent(event);

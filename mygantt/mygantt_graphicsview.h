@@ -12,6 +12,8 @@ class GanttTreeView;
 
 class GanttGraphicsView : public QGraphicsView
 {
+    Q_OBJECT
+
 public:
     GanttGraphicsView(QWidget *parent = 0);
     GanttGraphicsView(QGraphicsScene * scene, QWidget * parent = 0);
@@ -24,6 +26,9 @@ public:
     void changeExpanding(const QModelIndex& index);
 
     void setHSliderHeight(int hSliderHeight);
+
+signals:
+    void viewResized(const QSize& newSize);
 
 protected:
     void resizeEvent(QResizeEvent *event);

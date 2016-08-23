@@ -28,12 +28,16 @@ public:
     UtcDateTime closestStartDt(long long val) const;
     UtcDateTime closestFinishDt(long long val) const;
 
-
     UtcDateTime beginDt() const;
     UtcDateTime endDt() const;
 
     void setLimits(long long minValue, long long maxValue);
 
+
+    long long minTimeSize() const;
+
+    void setBeginHandle(long long beginHandle);
+    void setEndHandle(long long endHandle);
 
 private:
     UtcDateTime closestStartDtHelper(const UtcDateTime& val, GanttHeader::GanttPrecisionMode mode) const;
@@ -45,6 +49,8 @@ public slots:
     void setCurrentTime(const UtcDateTime &dt);
     void checkLimits(const UtcDateTime &start, const UtcDateTime &finish);
     void updateRange();
+    void setMinTimeSize(long long minTimeSize);
+    void updateMinTimeSize(const QSize& newViewSize);
 
 protected:
     void drawHandle(QPainter *painter, const QRect &handleRect, bool is_selected) const;
@@ -67,6 +73,7 @@ private:
     GanttScene* m_scene;
     GanttWidget* m_widget;
     long long m_shiftRange;
+    long long m_minTimeSize;
     QPoint m_lastPos;
 };
 

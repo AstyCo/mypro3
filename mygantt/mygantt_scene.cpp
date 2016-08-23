@@ -431,7 +431,7 @@ GanttHeader::GanttPrecisionMode GanttScene::headerPrecisionMode() const
 {
     if(!m_header)
     {
-        qDebug() << "GanttScene::headerMode m_header is NULL";
+        qWarning("GanttScene::headerMode m_header is NULL");
         return (GanttHeader::GanttPrecisionMode)0;
     }
     return m_header->mode();
@@ -441,7 +441,7 @@ GanttHeader::GanttPrecisionMode GanttScene::calculateTimeMode(const UtcDateTime 
 {
     if(!m_header)
     {
-        qDebug() << "GanttScene::calculateTimeMode m_header is NULL";
+        qWarning("GanttScene::calculateTimeMode m_header is NULL");
         return (GanttHeader::GanttPrecisionMode)0;
     }
     return m_header->calculateTimeMode(min,max);
@@ -450,6 +450,17 @@ GanttHeader::GanttPrecisionMode GanttScene::calculateTimeMode(const UtcDateTime 
 void GanttScene::emitLimitsChanged(const UtcDateTime &start, const UtcDateTime &finish)
 {
     emit limitsChanged(start,finish);
+}
+
+long long GanttScene::minTimeUnit() const
+{
+    if(!m_header)
+    {
+        qWarning("GanttScene::minTimeUnit m_header is NULL");
+        return 1;
+    }
+
+    return m_header->modeToMicrosecond((GanttHeader::GanttPrecisionMode)((int)GanttHeader::GanttPrecisionMode_count - 1));
 }
 
 void GanttScene::updateSliderRect()

@@ -99,10 +99,7 @@ void GanttSlider::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
     if(cursor().shape() == Qt::ClosedHandCursor)
     {
-        QPointF eventScenePos = mapToScene(event->pos());
-
-        setPos(eventScenePos.x(),scenePos().y());
-        setDt(m_scene->xToDt(eventScenePos.x()));
+        setDt(m_scene->xToDt(mapToScene(event->pos()).x()));
     }
 }
 
@@ -177,17 +174,15 @@ qreal GanttSlider::relativePos() const
     return 0;
 }
 
-void GanttSlider::setDt(UtcDateTime dt)
+bool GanttSlider::setDt(UtcDateTime dt)
 {
-
     if(dt < m_minDt)
         dt = m_minDt;
     if(dt > m_maxDt)
         dt = m_maxDt;
 
     if(dt == m_dt)
-        return;
-//    qDebug() <<"GanttSlider::setDt "<< dt;
+        return false;
 
     m_dt = dt;
 
@@ -197,14 +192,15 @@ void GanttSlider::setDt(UtcDateTime dt)
     if(!m_scene)
     {
         Q_ASSERT(false);
-        return;
+        return false;
     }
 
-    if(sender())
-        setPos((m_dt.isValid())?(m_scene->dtToX(m_dt)):(m_slidersRect.left()),scenePos().y());
+//    if(sender())
+    setPos((m_dt.isValid())?(m_scene->dtToX(m_dt)):(m_slidersRect.left()),scenePos().y());
 
     emit dtChanged(dt);
     emit relativePosChanged(relativePos());
+    return true;
 }
 
 UtcDateTime GanttSlider::dt() const

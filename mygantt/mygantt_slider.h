@@ -45,7 +45,7 @@ signals:
     void dtChanged(UtcDateTime dt);
 
 public slots:
-    void setDt(UtcDateTime dt);
+    bool setDt(UtcDateTime dt);
     void updateScenePos();
     void updateRange(const UtcDateTime& minDt, const UtcDateTime& maxDt);
 

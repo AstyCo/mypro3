@@ -68,7 +68,7 @@ public:
     void updateHeader();
 
     const GanttPrecisionMode &mode() const;
-    void setMode(const GanttPrecisionMode &mode);
+    bool setMode(const GanttPrecisionMode &mode);
 
     void onItemsAddition(const QList<GanttInfoItem*>& items);
     void onItemsAddition(GanttInfoItem* items);

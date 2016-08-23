@@ -45,8 +45,10 @@ GanttWidget::GanttWidget(QWidget *parent) :
 
     connect(m_scene->slider(),SIGNAL(dtChanged(UtcDateTime)),ui->intervalSlider,SLOT(setCurrentTime(UtcDateTime)));
 
+    connect(ui->ganttView, SIGNAL(viewResized(QSize)),m_scene,SLOT(onViewResize(QSize)));
+    connect(ui->ganttView, SIGNAL(viewResized(QSize)),ui->intervalSlider,SLOT(updateRange()));
+    connect(ui->ganttView, SIGNAL(viewResized(QSize)),ui->intervalSlider,SLOT(updateMinTimeSize(QSize)));
 
-    connect(m_scene, SIGNAL(viewResized()),ui->intervalSlider,SLOT(updateRange()));
 
     connect(ui->treeView,SIGNAL(expanded(QModelIndex)), this,SLOT(expanded(QModelIndex)));
     connect(ui->treeView,SIGNAL(collapsed(QModelIndex)), this,SLOT(collapsed(QModelIndex)));
@@ -321,7 +323,7 @@ void GanttWidget::updateRange()
 
 void GanttWidget::updateSliderLimits()
 {
-    qDebug() << "GanttWidget::updateSliderLimits";
+//    qDebug() << "GanttWidget::updateSliderLimits";
 
     GanttHeader::GanttPrecisionMode mode = m_scene->calculateTimeMode(m_minDt,m_maxDt);
 

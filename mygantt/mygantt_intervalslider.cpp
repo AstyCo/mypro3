@@ -28,6 +28,7 @@ GanttIntervalSlider::GanttIntervalSlider(QWidget *parent )
     setStyleSheet("background-color: rgb(21, 168, 194)");
 
     m_shiftRange = 0;
+    m_minTimeSize = 0;
     m_widget = NULL;
     QWidget *p_parent = parentWidget();
     while(!m_widget)
@@ -213,33 +214,22 @@ bool GanttIntervalSlider::moveHandles(long long deltaVal)
         newStart = closestStartDt(beg);
         newFinish = closestFinishDt(end);
 
-        bool changedStart = false, changedFinish = false;
-
         blockSignals(true);
-        if(newStart != lastStart)
-        {
-            setBeginHandle(dtToVal(newStart));
-            changedStart = true;
-        }
-        if(newFinish != lastFinish)
-        {
-            setEndHandle(dtToVal(newFinish));
-            changedFinish = true;
-        }
+        setHandles(dtToVal(newStart),dtToVal(newFinish));
         blockSignals(false);
 
-        if(changedStart)
+        if(newStart != lastStart)
         {
             emit valueChanged(IntervalSlider::BeginHandle,m_beginValue);
             emit beginMoved(m_beginValue);
         }
-        if(changedFinish)
+        if(newFinish != lastFinish)
         {
             emit valueChanged(IntervalSlider::EndHandle,m_endValue);
             emit endMoved(m_endValue);
         }
-        return (m_clippedHandle == BeginHandle && changedStart
-                || m_clippedHandle == EndHandle && changedFinish);
+        return (m_clippedHandle == BeginHandle && (newStart != lastStart)
+                || m_clippedHandle == EndHandle && (newFinish != lastFinish));
     }
     return false;
 }
@@ -270,6 +260,50 @@ void GanttIntervalSlider::keyReleaseEvent(QKeyEvent *e)
     IntervalSlider::keyReleaseEvent(e);
 }
 
+long long GanttIntervalSlider::minTimeSize() const
+{
+    return m_minTimeSize;
+}
+
+void GanttIntervalSlider::setBeginHandle(long long beginHandle)
+{
+    if(endHandle() - beginHandle < minTimeSize())
+        beginHandle = endHandle() - minTimeSize();
+    IntervalSlider::setBeginHandle(beginHandle);
+
+//    qDebug() << "beginDt: "/ << beginDt();
+//    qDebug() << "endDt: " << endDt();
+
+}
+
+void GanttIntervalSlider::setEndHandle(long long endHandle)
+{
+    if(endHandle - beginHandle() < minTimeSize())
+        endHandle = beginHandle() + minTimeSize();
+    IntervalSlider::setEndHandle(endHandle);
+
+//    qDebug() << "beginDt: " << beginDt();
+//    qDebug() << "endDt: " << endDt();
+}
+
+void GanttIntervalSlider::setMinTimeSize(long long minTimeSize)
+{
+    m_minTimeSize = minTimeSize;
+
+//    qDebug() <<"minTimeSize: "<< QString::number(m_minTimeSize);
+}
+
+void GanttIntervalSlider::updateMinTimeSize(const QSize &newViewSize)
+{
+    if(!m_scene)
+    {
+        qWarning("GanttIntervalSlider::closestStartDt m_scene is NULL");
+        return;
+    }
+
+    setMinTimeSize(m_scene->minTimeUnit() * qMax(0,(int)(newViewSize.width() / MIN_WIDTH_FOR_TIME_VISUALIZING) - 1));
+}
+
 void GanttIntervalSlider::setScene(GanttScene *scene)
 {
     m_scene = scene;
@@ -296,7 +330,7 @@ UtcDateTime GanttIntervalSlider::closestStartDt(long long val) const
 {
     if(!m_scene)
     {
-        qDebug() << "GanttIntervalSlider::closestStartDt m_scene is NULL";
+        qWarning("GanttIntervalSlider::closestStartDt m_scene is NULL");
         return UtcDateTime();
     }
 
@@ -314,7 +348,7 @@ UtcDateTime GanttIntervalSlider::closestFinishDt(long long val) const
 {
     if(!m_scene)
     {
-        qDebug() << "GanttIntervalSlider::closestFinishDt m_scene is NULL";
+        qWarning("GanttIntervalSlider::closestFinishDt m_scene is NULL");
         return UtcDateTime();
 
     }
@@ -346,16 +380,16 @@ void GanttIntervalSlider::updateRange()
 {
     if(!m_scene)
     {
-        qDebug() << "GanttIntervalSlider::updateRange m_scene is NULL";
+        qWarning("GanttIntervalSlider::updateRange m_scene is NULL");
         return;
     }
     if(!m_widget)
     {
-        qDebug() << "GanttIntervalSlider::updateRange m_widget is NULL";
+        qWarning("GanttIntervalSlider::updateRange m_widget is NULL");
         return;
     }
 
-    qDebug() << "GanttIntervalSlider::updateRange";
+//    qDebug() << "GanttIntervalSlider::updateRange";
 
     UtcDateTime min = m_widget->minDt(),
             max = m_widget->maxDt();
@@ -427,10 +461,10 @@ void GanttIntervalSlider::setCurrentTime(const UtcDateTime &dt)
 
 void GanttIntervalSlider::checkLimits(const UtcDateTime &start, const UtcDateTime &finish)
 {
-    qDebug()<<"checkLimits";
+//    qDebug()<<"checkLimits";
     if(!m_widget)
     {
-        qDebug()<< "GanttIntervalSlider::checkLimits m_widget is NULL";
+        qWarning("GanttIntervalSlider::checkLimits m_widget is NULL");
         return;
     }
     bool needUpdate = false;

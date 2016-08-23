@@ -36,7 +36,6 @@ public:
     void updateHeaderPos(int dy);
     void updateSliderRect();
 
-    void onViewResize(const QSize& newSize);
     void onViewAdded(QGraphicsView* view);
 
     void setHeaderMode(GanttHeader::GanttHeaderMode mode);
@@ -76,9 +75,14 @@ public:
 
     void emitLimitsChanged(const UtcDateTime &start, const UtcDateTime &finish);
 
+    long long minTimeUnit() const;
+
 signals:
     void limitsChanged(const UtcDateTime &start, const UtcDateTime &finish);
     void viewResized();
+
+public slots:
+    void onViewResize(const QSize& newSize);
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
