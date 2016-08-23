@@ -40,7 +40,7 @@ QRectF GanttSlider::boundingRect() const
 
 void GanttSlider::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-
+    painter->setRenderHint(QPainter::Antialiasing,true);
 
     QBrush borderBrush(QColor(Qt::black).lighter(130));
     QBrush fillBrush(QColor(Qt::red));
@@ -114,6 +114,11 @@ void GanttSlider::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     QGraphicsItem::mouseReleaseEvent(event);
 }
 
+void GanttSlider::makeStep(long long deltaVal)
+{
+    setDt(m_dt.addMicroseconds(deltaVal));
+}
+
 void GanttSlider::updateScenePos()
 {
     if(outOfRange())
@@ -138,10 +143,8 @@ void GanttSlider::updateRange(const UtcDateTime &minDt, const UtcDateTime &maxDt
 {
     GanttHeader::GanttPrecisionMode mode = m_scene->calculateTimeMode(minDt,maxDt);
 
-    m_minDt = minDt/*m_scene->startByDt(minDt,mode)*/;
-    m_maxDt = maxDt/*m_scene->finishByDt(maxDt,mode)*/;
-
-    emit relativePosChanged(relativePos());
+    m_minDt = minDt;
+    m_maxDt = maxDt;
 }
 
 bool GanttSlider::outOfRange() const
@@ -195,11 +198,9 @@ bool GanttSlider::setDt(UtcDateTime dt)
         return false;
     }
 
-//    if(sender())
-    setPos((m_dt.isValid())?(m_scene->dtToX(m_dt)):(m_slidersRect.left()),scenePos().y());
+    updateScenePos();
 
     emit dtChanged(dt);
-    emit relativePosChanged(relativePos());
     return true;
 }
 

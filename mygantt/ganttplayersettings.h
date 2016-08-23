@@ -1,13 +1,13 @@
 #ifndef GANTTPLAYERSETTINGS_H
 #define GANTTPLAYERSETTINGS_H
 
-#include <QWidget>
+#include <QToolBar>
 
 namespace Ui {
 class GanttPlayerSettings;
 }
 
-class GanttPlayerSettings : public QWidget
+class GanttPlayerSettings : public QToolBar
 {
     Q_OBJECT
 
@@ -16,7 +16,13 @@ public:
     ~GanttPlayerSettings();
 
 private:
+    void initActions();
+
+private:
     Ui::GanttPlayerSettings *ui;
+
+    QList<QAction*> m_actions;
+
 };
 
 #endif // GANTTPLAYERSETTINGS_H

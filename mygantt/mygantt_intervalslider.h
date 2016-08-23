@@ -39,13 +39,15 @@ public:
     void setBeginHandle(long long beginHandle);
     void setEndHandle(long long endHandle);
 
+
 private:
     UtcDateTime closestStartDtHelper(const UtcDateTime& val, GanttHeader::GanttPrecisionMode mode) const;
     UtcDateTime closestFinishDtHelper(const UtcDateTime& val, GanttHeader::GanttPrecisionMode mode) const;
 
+    bool outOfLimits(const UtcDateTime& dt) const;
+
 
 public slots:
-    void setCurrentTimePos(const qreal &currentTimePos);
     void setCurrentTime(const UtcDateTime &dt);
     void checkLimits(const UtcDateTime &start, const UtcDateTime &finish);
     void updateRange();
@@ -56,6 +58,8 @@ protected:
     void drawHandle(QPainter *painter, const QRect &handleRect, bool is_selected) const;
     void drawSliderLine(QPainter *painter, const QRect &sliderRect) const;
 
+    void drawCurrentTime(QPainter *painter, const QRect &sliderRect) const;
+
     void mouseMoveEvent(QMouseEvent *e);
     bool moveHandles(long long deltaVal);
     void mousePressEvent(QMouseEvent *e);
@@ -65,7 +69,6 @@ protected:
 
 private:
     UtcDateTime m_currentTime;
-    qreal m_currentTimePos;
 
     qreal m_currentTimeRectWidth;
     QColor m_currentTimeRectColor;

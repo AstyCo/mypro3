@@ -26,6 +26,8 @@ GanttScene::GanttScene(QObject * parent) :
     m_slider = new GanttSlider;
     m_slider->setScene(this);
 
+    connect(m_slider,SIGNAL(dtChanged(UtcDateTime)),this,SIGNAL(currentDtChanged(UtcDateTime)));
+
     updateSliderRect();
 
 //    QBrush backgroundBrush(Qt::HorPattern);
@@ -138,6 +140,12 @@ void GanttScene::onViewResize(const QSize&newSize)
 
 }
 
+void GanttScene::makeStep(long long step)
+{
+    if(m_slider)
+        m_slider->makeStep(step);
+}
+
 void GanttScene::onViewAdded(QGraphicsView* view)
 {
     m_header->init();
@@ -192,12 +200,6 @@ UtcDateTime GanttScene::slidersDt() const
         return UtcDateTime();
 
     return m_slider->dt();
-
-//    long long len = m_header->startDt().microsecondsTo(m_header->finishDt());
-
-//    len = 1.0 * len * m_slider->sliderPos();
-
-//    return m_header->startDt().addMicroseconds(len);
 }
 
 

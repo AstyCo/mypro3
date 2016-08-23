@@ -79,10 +79,14 @@ public:
 
 signals:
     void limitsChanged(const UtcDateTime &start, const UtcDateTime &finish);
+
+    void currentDtChanged(const UtcDateTime& dt);
     void viewResized();
 
 public slots:
     void onViewResize(const QSize& newSize);
+
+    void makeStep(long long step);
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);

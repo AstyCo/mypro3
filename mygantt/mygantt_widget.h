@@ -45,17 +45,26 @@ private slots:
     void expanded(const QModelIndex& index);
     void collapsed(const QModelIndex& index);
 
-
     void onSliderMoved();
 
     void on_pushButton_slider_clicked();
     void on_pushButton_header_clicked();
 
 public slots:
-    void repaintDtHeader();
-
-    void updateRange();
+//    void repaintDtHeader();
+    void updateRange(const UtcDateTime& min, const UtcDateTime& max);
     void updateSliderLimits();
+    // ZOOM +
+    void newLimits();
+    void newLimits(const UtcDateTime& min, const UtcDateTime& max);
+    void prevLimits();
+    // ZOOM -
+
+
+
+private slots:
+    void pushLimits();
+
 
 private:
     void updatePos(GanttInfoNode* from);
@@ -70,6 +79,8 @@ private:
     qreal m_curSceneMax;
 
     UtcDateTime m_minDt, m_maxDt;
+
+    QVector<std::pair<UtcDateTime,UtcDateTime> > m_stackLimits;
 
     friend class GanttScene;
     friend class MyGanttView;

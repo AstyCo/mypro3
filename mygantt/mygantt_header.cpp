@@ -79,8 +79,6 @@ void GanttHeader::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
 
         UtcDateTime dt = m_startDt;
 
-        qDebug() <<"paint m_mode: "<<QString::number(m_mode);
-
         do
         {
             if(isDrawn(dt,m_mode))
@@ -181,7 +179,6 @@ bool GanttHeader::setMode(const GanttPrecisionMode &mode)
     if(m_mode == mode || m_headerMode != TimelineMode)
         return false;
 
-    qDebug()<< "setMode: "<<QString::number(mode);
     m_mode = mode;
     updateHeader();
     return true;
@@ -219,8 +216,8 @@ void GanttHeader::initRange()
 
     setLengthInMicroseconds(m_startDt.microsecondsTo(m_finishDt));
 
-    if(m_widget)
-        m_widget->repaintDtHeader();
+//    if(m_widget)
+//        m_widget->repaintDtHeader();
 }
 
 UtcDateTime GanttHeader::startByDt(const UtcDateTime &dt,GanttPrecisionMode mode) const
@@ -1026,7 +1023,7 @@ void GanttHeader::updateWidget()
     if(!m_widget)
         return;
 
-    m_widget->updateRange();
+    m_widget->updateRange(m_minDt,m_maxDt);
 }
 
 void GanttHeader::updateVisItemCount()
@@ -1314,8 +1311,6 @@ GanttHeader::GanttPrecisionMode GanttHeader::calculateTimeMode(const UtcDateTime
     for(int i = GanttPrecisionMode_count-1; i >= 0; --i)
     {
         GanttPrecisionMode i_mode = static_cast<GanttPrecisionMode>(i);
-        qDebug() <<"coef: "<<QString::number(coef)
-                <<"\nmodesec: "<<QString::number(modeToMicrosecond(i_mode));
         if(coef <= modeToMicrosecond(i_mode))
         {
             mode = i_mode;
@@ -1323,19 +1318,12 @@ GanttHeader::GanttPrecisionMode GanttHeader::calculateTimeMode(const UtcDateTime
         }
     }
 
-    qDebug() <<"mode: "<<QString::number(mode);
-
     if(mode == GanttPrecisionMode_count)
     {
         qWarning("GanttHeader::calculateTimeMode() out of range");
 
-//        qDebug() << "min: " << min << "max: "<< max;
-//        qDebug() << "visItemCount:" << QString::number(m_visItemCount);
-
         return (GanttPrecisionMode)0;
     }
-
-//    qDebug() <<"visItemCount: "<< QString::number(m_visItemCount);
 
     return mode;
 }

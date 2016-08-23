@@ -57,9 +57,10 @@ SOURCES += main.cpp\
     mygantt_treedelegate.cpp \
     mygantt_intervalslider.cpp \
     mygantt_slider.cpp \
-    ganttplayersettings.cpp \
     mygantt_playercontrol.cpp \
-    playercontrolbutton.cpp
+    playercontrolbutton.cpp \
+    ganttintervalsliderzoom.cpp \
+    ganttplayersettings.cpp
 
 HEADERS  += \
     mygantt_globalvalues.h \
@@ -79,13 +80,15 @@ HEADERS  += \
     mygantt_treedelegate.h \
     mygantt_intervalslider.h \
     mygantt_slider.h \
-    ganttplayersettings.h \
     mygantt_playercontrol.h \
-    playercontrolbutton.h
+    playercontrolbutton.h \
+    ganttintervalsliderzoom.h \
+    ganttplayersettings.h
 
 FORMS    += ganttwidget.ui \
-    ganttplayersettings.ui \
-    mygantt_playercontrol.ui
+    mygantt_playercontrol.ui \
+    ganttintervalsliderzoom.ui \
+    ganttplayersettings.ui
 
 DISTFILES += \
     Buttons 64x64/back_off_64.png \

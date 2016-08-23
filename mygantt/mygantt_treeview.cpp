@@ -15,7 +15,9 @@ GanttTreeView::GanttTreeView(QWidget * parent )
 {
     m_graphicsView = NULL;
 
-    setHeader(new GanttHeaderView(Qt::Horizontal,this));
+    m_header = new GanttHeaderView(Qt::Horizontal,this);
+    setHeader(m_header);
+
     setMinimumWidth(GANTTTREEVIEW_MIN_WIDTH);
     horizontalScrollBar()->setStyleSheet(
                 QString("QScrollBar {height:%1px;}").arg(m_hSliderHeight));
@@ -61,20 +63,13 @@ void GanttTreeView::mouseMoveEvent(QMouseEvent *event)
 {
     QPoint pos = event->pos();
 
-//    qDebug() << "rect: "<<rect();
-//    qDebug() << "pos: "<< pos;
-//    qDebug() << "header: "<<QString::number(header()->height());
-//qDebug() << "m_hSliderHeight: "<< m_hSliderHeight;
-
     if( pos.y() > rect().bottom() - header()->height() - m_hSliderHeight)
     {
-//        qDebug() << '+';
         setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
         update();
     }
     else
     {
-//         qDebug() << '-';
         setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     }
     QTreeView::mouseMoveEvent(event);

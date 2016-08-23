@@ -57,6 +57,11 @@ GanttWidget::GanttWidget(QWidget *parent) :
     connect(ui->intervalSlider,SIGNAL(beginMoved(long long)),this, SLOT(onSliderMoved()));
     connect(ui->intervalSlider,SIGNAL(endMoved(long long)),this, SLOT(onSliderMoved()));
 
+    connect(ui->intervalSlizedZoom,SIGNAL(increaseButtonClicked(bool)),this,SLOT(newLimits()));
+    connect(ui->intervalSlizedZoom,SIGNAL(restoreButtonClicked(bool)),this,SLOT(prevLimits()));
+
+    connect(ui->playerControl,SIGNAL(makeStep(long long)),m_scene,SLOT(makeStep(long long)));
+    connect(m_scene,SIGNAL(currentDtChanged(UtcDateTime)),ui->treeView,SLOT(repaintHeader()));
 
 
 //    GanttInfoNode *test1 = new GanttInfoNode
@@ -297,18 +302,14 @@ void GanttWidget::on_pushButton_header_clicked()
         m_scene->setHeaderMode(GanttHeader::TimelineMode);
 }
 
-void GanttWidget::repaintDtHeader()
-{
-    ui->treeView->repaintHeader();
-}
 
-void GanttWidget::updateRange()
+void GanttWidget::updateRange(const UtcDateTime& min, const UtcDateTime& max)
 {
-    if(!m_scene || !m_scene->m_header)
+    if(!m_scene)
         return;
 
-    m_minDt = m_scene->m_header->m_minDt;
-    m_maxDt = m_scene->m_header->m_maxDt;
+    m_minDt = min;
+    m_maxDt = max;
 
     m_scene->update();
 
@@ -323,13 +324,41 @@ void GanttWidget::updateRange()
 
 void GanttWidget::updateSliderLimits()
 {
-//    qDebug() << "GanttWidget::updateSliderLimits";
-
     GanttHeader::GanttPrecisionMode mode = m_scene->calculateTimeMode(m_minDt,m_maxDt);
 
     ui->intervalSlider->setLimits(m_scene->startByDt(m_minDt,mode).toMicrosecondsSinceEpoch(),
                                     m_scene->finishByDt(m_maxDt,mode).toMicrosecondsSinceEpoch());
 
+}
+
+void GanttWidget::newLimits()
+{
+    if(!m_scene)
+        return;
+
+    newLimits(m_scene->minDt(),m_scene->maxDt());
+}
+
+void GanttWidget::newLimits(const UtcDateTime &min, const UtcDateTime &max)
+{
+    pushLimits();
+    updateRange(min,max);
+}
+
+void GanttWidget::prevLimits()
+{
+    if(m_stackLimits.isEmpty())
+        return;
+
+    std::pair<UtcDateTime,UtcDateTime> limits = m_stackLimits.last();
+    m_stackLimits.pop_back();
+
+    updateRange(limits.first,limits.second);
+}
+
+void GanttWidget::pushLimits()
+{
+    m_stackLimits.append(std::make_pair(m_minDt,m_maxDt));
 }
 
 QList<GanttInfoItem*> generateTest()

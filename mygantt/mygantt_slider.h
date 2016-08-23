@@ -41,10 +41,10 @@ protected:
 
 
 signals:
-    void relativePosChanged(qreal pos);
     void dtChanged(UtcDateTime dt);
 
 public slots:
+    void makeStep(long long deltaVal);
     bool setDt(UtcDateTime dt);
     void updateScenePos();
     void updateRange(const UtcDateTime& minDt, const UtcDateTime& maxDt);
